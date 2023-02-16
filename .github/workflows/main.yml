@@ -1,8 +1,5 @@
 name: Remote SSH
-on:
-  push:
-    branches:
-      -Deployment
+on: [push]
 
 jobs:
  build:
