@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-a0n*^vbgqbny=77u!#xu2%1a)&uhbd_$*n%grf1k%#ya4^zn8s
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["exseed.duckdns.org","ecm2434.duckdns.org"]
 
 
 # Application definition
