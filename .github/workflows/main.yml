@@ -1,17 +1,17 @@
-name: Remote SSH
+name: remote ssh command
 on: [push]
-
 jobs:
- build:
+
+  build:
     name: Build
     runs-on: ubuntu-latest
     steps:
     - name: executing remote ssh commands using password
-      uses: appleboy/ssh-action@master
+      uses: appleboy/ssh-action@v0.1.7
       with:
-        host: ${{ secrets.IP }}
+        host: ${{	secrets.IP }}
         username: ${{ secrets.USER }}
-        password: ${{ secrets.PRIVATE_KEY }}
+        password: ${{ secrets.PASSWORD }}
         port: ${{ secrets.PORT }}
         script: |
           cd pidjango/gamificationECM2434/
