@@ -15,4 +15,9 @@ jobs:
         port: ${{ secrets.PORT }}
         script: |
           cd pidjango/gamificationECM2434/
+          git stash
           ${{ secrets.SCRIPT}}
+          git stash apply
+          git add db.sqlite3
+          git commit
+          git push
