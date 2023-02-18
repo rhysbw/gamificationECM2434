@@ -18,6 +18,6 @@ jobs:
           git stash
           ${{ secrets.SCRIPT}}
           git stash apply
-          git add db.sqlite3
+          git add mysite/db.sqlite3
           git commit
           git push
