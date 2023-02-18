@@ -18,6 +18,5 @@ jobs:
           git stash
           ${{ secrets.SCRIPT}}
           git stash apply
-          git add mysite/db.sqlite3
-          git commit
+          git commit -a -m "updating database from server"
           git push
