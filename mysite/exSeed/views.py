@@ -6,10 +6,6 @@ from django.shortcuts import render, redirect
 from .forms import SignupForm
 
 
-<<<<<<< HEAD
-
-=======
->>>>>>> Development
 # Create your views here.
 def signup(request):
     if request.method == 'POST':
@@ -23,11 +19,7 @@ def signup(request):
             login(request, user)
             return redirect('home')
     else:
-<<<<<<< HEAD
-        form = UserCreationForm()
-=======
         form = SignupForm()
->>>>>>> Development
     return render(request, 'signup.html', {"register_form": form})
 
 
@@ -53,7 +45,3 @@ def logout_request(request):
     logout(request)
     messages.info(request, "You have successfully logged out")
     return redirect('home')
-<<<<<<< HEAD
-=======
-
->>>>>>> Development
