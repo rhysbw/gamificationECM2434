@@ -4,3 +4,4 @@ sqlparse==0.4.3
 django-crispy-forms==2.0
 crispy-bootstrap5==0.7
 
+
