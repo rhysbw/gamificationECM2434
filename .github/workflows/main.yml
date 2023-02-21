@@ -16,4 +16,3 @@ jobs:
         script: |
           cd pidjango/gamificationECM2434/
           ${{ secrets.SCRIPT}}
-          sudo reboot
