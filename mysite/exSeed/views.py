@@ -1,4 +1,5 @@
 from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
@@ -44,5 +45,14 @@ def login_request(request):
 def logout_request(request):
     logout(request)
     messages.info(request, "You have successfully logged out")
+    return redirect('home')
+
+
+def delete_request(request, username):
+    try:
+        user = User.objects.get(username=username)
+        user.delete()
+    except Exception as e:
+        messages.error(request, f"Failed to delete user: {e}")
     return redirect('home')
 
