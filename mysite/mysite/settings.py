@@ -27,7 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["exseed.duckdns.org",
                  "ecm2434.duckdns.org",
-		 "spotoftheday.duckdns.org",
+	            "spotoftheday.duckdns.org",
                  '127.0.0.1', 
                  '192.168.0.31',  # Ben IP
                  '10.229.79.209'  # Sam IP
@@ -37,6 +37,7 @@ ALLOWED_HOSTS = ["exseed.duckdns.org",
 # Application definition
 
 INSTALLED_APPS = [
+    'exSeed',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
