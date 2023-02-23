@@ -20,8 +20,13 @@ class UserInfo(models.Model):
         max_length=100,
         # ! Don't know how we are dealing with this. Is this the actual title, or just a reference to a title
     )
-    level = models.PositiveSmallIntegerField(
-        help_text="The users current/high score",  # Is this the current score or highest score?
+    totalPoints = models.PositiveSmallIntegerField(
+        help_text="The users high score",
+        default=0,
+        blank=True,
+    )
+    currentStreak = models.PositiveSmallIntegerField(
+        help_text="The users current streak",
         default=0,
         blank=True,
     )
@@ -91,7 +96,7 @@ class Spot(models.Model):
 
 
 class CurrentSpotRegister(models.Model):
-    uId = models.ForeignKey(
+    uId = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
         help_text="This user has attended today's spot",
@@ -127,4 +132,4 @@ class PreviousSpotAttend(models.Model):
 
     class Meta:
         verbose_name_plural = "Previous Spot Attendance Record"
-        verbose_name = "Previous Spot Attendance Record"
+        verbose_name = "Previous Spot Attendance Records"
