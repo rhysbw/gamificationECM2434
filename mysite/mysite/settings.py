@@ -36,6 +36,7 @@ ALLOWED_HOSTS = ["exseed.duckdns.org",
 # Application definition
 
 INSTALLED_APPS = [
+    'exSeed',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
