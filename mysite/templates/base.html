@@ -10,6 +10,12 @@
     <link rel="stylesheet" href="{% static 'bootstrap.min.css' %}">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Alatsi&amp;display=swap">
     <link rel="stylesheet" href="{% static 'Navbar-Right-Links-icons.css' %}">
+
+    <style>
+    
+
+    </style>
+    {% block style %}{% endblock %}
 </head>
 
 <body class="align-items-center" style="background: rgb(225,224,184);">
@@ -28,9 +34,11 @@
     </nav>
     <script src="{% static 'bootstrap.min.js' %}"></script>
 
+
     {% block content %}
 
     {% endblock %}
+    
 </body>
 
 </html>
