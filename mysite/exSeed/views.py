@@ -5,7 +5,8 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from .forms import SignupForm
-
+from django.contrib.auth.decorators import login_required
+import random
 
 # Create your views here.
 def signup(request):
@@ -56,3 +57,25 @@ def delete_request(request, username):
         messages.error(request, f"Failed to delete user: {e}")
     return redirect('home')
 
+def home_page(request):
+    # Checks if the user is logged in or not, if not they are automatically redirected
+    # to the login page
+    if not request.user.is_authenticated:
+        return redirect('/login')
+
+    filePaths = [
+        "https://i.imgur.com/u7yqGqI.jpeg", #Duck pond
+        "https://i.imgur.com/zxC3CwO.jpg", #Back of XFI
+        "https://i.imgur.com/giM0n6t.jpg", #Community Garden
+        "https://i.imgur.com/jkZ7csT.jpg", #East Park Pond
+        "https://i.imgur.com/4Okic8y.jpg", #Reed hall orchid
+        "https://i.imgur.com/iulNkYN.jpg", #Rock Garden
+        "https://i.imgur.com/cE7q7ZL.jpg", #Stream
+        "https://i.imgur.com/74XNFNu.jpg" #Valley of peace
+                ]
+
+    image = random.choice(filePaths)
+
+    pageContent = {'file_path' : image}
+
+    return render(request, 'home.html', pageContent)
