@@ -1,14 +1,24 @@
+from django.shortcuts import render, redirect
+from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.models import User
-from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib import messages
-from django.shortcuts import render, redirect
-from .forms import SignupForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.decorators import login_required
 
+from .forms import SignupForm
+from exSeed.models import Spot
+import random
+
+from user_agents import parse
 
 # Create your views here.
 def signup(request):
+    # Checks if the user is on a desktop instead of mobile and if
+    # so renders the QR code page
+    user_agent = parse(request.META['HTTP_USER_AGENT'])
+    if not user_agent.is_mobile:
+        return render(request, 'QRCodePage.html')
+
     if request.method == 'POST':
         form = SignupForm(request.POST)
         if form.is_valid():
@@ -25,6 +35,12 @@ def signup(request):
 
 
 def login_request(request):
+    # Checks if the user is on a desktop instead of mobile and if
+    # so renders the QR code page
+    user_agent = parse(request.META['HTTP_USER_AGENT'])
+    if not user_agent.is_mobile:
+        return render(request, 'QRCodePage.html')
+
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
@@ -56,3 +72,40 @@ def delete_request(request, username):
         messages.error(request, f"Failed to delete user: {e}")
     return redirect('home')
 
+def get_random_spot():
+    spots = Spot.objects.all()
+    return random.choice(spots)
+
+
+def home_page(request):
+    # Checks if the user is on a desktop instead of mobile and if
+    # so renders the QR code page
+    user_agent = parse(request.META['HTTP_USER_AGENT'])
+    if not user_agent.is_mobile:
+        return render(request, 'QRCodePage.html')
+
+    # Checks if the user is logged in or not, if not they are automatically redirected
+    # to the login page
+    if not request.user.is_authenticated:
+        return redirect('/login')
+
+    filePaths = [
+        "https://i.imgur.com/zxC3CwO.jpg", # Back of XFI
+        "https://i.imgur.com/giM0n6t.jpg", # Community Garden
+        "https://i.imgur.com/jkZ7csT.jpg", # East Park Pond
+        "https://i.imgur.com/u7yqGqI.jpeg", #Duck pond
+        "https://i.imgur.com/4Okic8y.jpg", #Reed hall orchid
+        "https://i.imgur.com/iulNkYN.jpg", #Rock Garden
+        "https://i.imgur.com/cE7q7ZL.jpg", #Stream
+        "https://i.imgur.com/74XNFNu.jpg" #Valley of peace
+                ]
+
+    spot = get_random_spot()
+    spot_name = spot.name
+    image = filePaths[spot.image_pointer - 1]
+
+    pageContent = {'file_path' : image,
+                   'spot_name' : spot_name}
+
+
+    return render(request, 'home.html', pageContent)

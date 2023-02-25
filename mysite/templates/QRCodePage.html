@@ -1,0 +1,32 @@
+
+
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Home{% endblock %}
+
+{% block style %}
+<style>
+  .page_container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  .page_container img {
+    max-width: 20%;
+    max-height: 20%;
+  }
+</style>
+{% endblock style %}
+
+
+{% block content %}
+  <div class="page_container">
+    <h1>Sorry, only mobile users can use Spot Of The Day.</h1>
+    <p>Scan our QR code here to join!</p>
+    <img src="https://i.imgur.com/tGYXTbM.png" alt="QR code">
+  </div>
+{% endblock %}
+
