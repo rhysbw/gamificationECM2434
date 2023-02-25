@@ -1,11 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
-    <list default="true" id="cb6f74e3-0618-4eb6-886f-14d09fbef6a2" name="Changes" comment="* Prevents the user from being able to access a site when they are on a desktop web browser, still allows access to the admin site from a desktop browser">
-      <change afterPath="$PROJECT_DIR$/mysite/mysite/static/SiteQRCode.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mysite/static/spotPhotos/BackOfXfi.jpeg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mysite/static/spotPhotos/CommunityGarden.jpeg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/mysite/static/spotPhotos/EastParkPond.jpeg" afterDir="false" />
+    <list default="true" id="cb6f74e3-0618-4eb6-886f-14d09fbef6a2" name="Changes" comment="re adds the static files which i accidentally deleted">
+      <change afterPath="$PROJECT_DIR$/mysite/templates/profilePage.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_24_02_2023_19_14__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_24_02_2023_19_14__Changes_.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mysite/db.sqlite3" beforeDir="false" afterPath="$PROJECT_DIR$/mysite/db.sqlite3" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mysite/exSeed/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/mysite/exSeed/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mysite/exSeed/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/mysite/exSeed/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mysite/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/mysite/templates/base.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -28,17 +34,25 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="UPDATE_TYPE" value="REBASE" />
   </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
   <component name="ProjectId" id="2M3jFHud4B1GRw0vLOEBgadtY1q" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">
-    <property name="DefaultHtmlFileTemplate" value="HTML File" />
-    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
-    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/mysite/mysite/static" />
-  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "DefaultHtmlFileTemplate": "HTML File",
+    "WebServerToolWindowFactoryState": "false",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\BenPi\Desktop\Group Coursework\gamificationECM2434\mysite\mysite\static" />
@@ -56,6 +70,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1677003058023</updated>
+      <workItem from="1677333582326" duration="5060000" />
     </task>
     <task id="LOCAL-00001" summary="Adds the new base.html and updates home.html files so that they can now display a spot of the day">
       <created>1677265647981</created>
@@ -94,6 +109,9 @@
     </task>
     <option name="localTasksCounter" value="6" />
     <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
