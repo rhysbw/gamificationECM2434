@@ -3,13 +3,14 @@ from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from django.contrib.auth.decorators import login_required
 
 from .forms import SignupForm
-from exSeed.models import Spot
+from exSeed.models import Spot, PreviousSpotAttend
 import random
 
 from user_agents import parse
+
+import datetime
 
 # Create your views here.
 def signup(request):
@@ -72,10 +73,6 @@ def delete_request(request, username):
         messages.error(request, f"Failed to delete user: {e}")
     return redirect('home')
 
-def get_random_spot():
-    spots = Spot.objects.all()
-    return random.choice(spots)
-
 
 def home_page(request):
     # Checks if the user is on a desktop instead of mobile and if
@@ -89,23 +86,18 @@ def home_page(request):
     if not request.user.is_authenticated:
         return redirect('/login')
 
-    filePaths = [
-        "https://i.imgur.com/zxC3CwO.jpg", # Back of XFI
-        "https://i.imgur.com/giM0n6t.jpg", # Community Garden
-        "https://i.imgur.com/jkZ7csT.jpg", # East Park Pond
-        "https://i.imgur.com/u7yqGqI.jpeg", #Duck pond
-        "https://i.imgur.com/4Okic8y.jpg", #Reed hall orchid
-        "https://i.imgur.com/iulNkYN.jpg", #Rock Garden
-        "https://i.imgur.com/cE7q7ZL.jpg", #Stream
-        "https://i.imgur.com/74XNFNu.jpg" #Valley of peace
-                ]
+    #Find todays spot
+    today = datetime.date.today()
+    spot = PreviousSpotAttend.objects.get(spotDay=today).sId
 
-    spot = get_random_spot()
+    #Assigns the values of todays spot so they can be rendered into the website
     spot_name = spot.name
-    image = filePaths[spot.image_pointer - 1]
+    image = spot.imageName
+    description = spot.desc
 
     pageContent = {'file_path' : image,
-                   'spot_name' : spot_name}
+                   'spot_name' : spot_name,
+                   'spot_description': description}
 
 
     return render(request, 'home.html', pageContent)
