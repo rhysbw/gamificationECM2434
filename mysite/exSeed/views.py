@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.core.exceptions import ObjectDoesNotExist
 
 from .forms import SignupForm
 from exSeed.models import Spot, PreviousSpotAttend
@@ -88,16 +89,43 @@ def home_page(request):
 
     #Find todays spot
     today = datetime.date.today()
-    spot = PreviousSpotAttend.objects.get(spotDay=today).sId
+
+    #Checks if there is a spot for today and if not a new one will be assigned
+    try:
+        spot = PreviousSpotAttend.objects.filter(spotDay=today).first().sId
+        print(spot)
+        print("spot was already assigned")
+    except:
+        print("spot was not assigned")
+        yesterday = today - datetime.timedelta(days=1)
+        while True:
+            # pick a random spot
+            spot = random.choice(Spot.objects.all())
+            # check if that is the same as yesterday and if so get a new one
+            try:
+                print("here")
+                if spot.id != PreviousSpotAttend.objects.filter(spotDay=yesterday)[0].sId:
+                    False
+            except:
+                break
+        PreviousSpotAttend(sId=spot, attendance=0, spotDay=today).save()
+        print("spot of the day assigned")
+
+
 
     #Assigns the values of todays spot so they can be rendered into the website
     spot_name = spot.name
     image = spot.imageName
     description = spot.desc
+    latitude = spot.latitude
+    longitude = spot.longitude
+
 
     pageContent = {'file_path' : image,
                    'spot_name' : spot_name,
-                   'spot_description': description}
+                   'spot_description': description,
+                   'spot_latitude': latitude,
+                   'spot_longitude': longitude}
 
 
     return render(request, 'home.html', pageContent)
