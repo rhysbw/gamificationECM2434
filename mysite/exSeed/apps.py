@@ -20,7 +20,7 @@ class ExseedConfig(AppConfig):
                 # check if that is the same as yesterday and if so get a new one
                 try:
                     if spot.id != PreviousSpotAttend.objects.filter(spotDay=yesterday)[0].sId:
-                        False
+                        break
                 except IndexError:
                     break
             PreviousSpotAttend(sId=spot, attendance=0, spotDay=today).save()
