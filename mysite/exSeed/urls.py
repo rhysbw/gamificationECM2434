@@ -9,5 +9,6 @@ urlpatterns = [
     path("delete/<username>", views.delete_request, name='delete'),
     path('', views.home_page, name="home"),
     path("leaderboard/streak", views.leaderboard, name="lb_streak"),
-    path("leaderboard/total", views.leaderboard, name="lb_total")
+    path("leaderboard/total", views.leaderboard, name="lb_total"),
+    path("profile", views.profile_page, name ="profile")
 ]

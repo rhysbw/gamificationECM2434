@@ -184,3 +184,25 @@ def leaderboard(request):
                    'extra': additional_rankings, 'position': user_position}
 
     return render(request, 'leaderboard.html', pageContent)
+
+def profile_page(request):
+    # Checks if the user is on a desktop instead of mobile and if
+    # so renders the QR code page
+    user_agent = parse(request.META['HTTP_USER_AGENT'])
+    if not user_agent.is_mobile:
+        return render(request, 'QRCodePage.html')
+
+    # Checks if the user is logged in or not, if not they are automatically redirected
+    # to the login page
+    if not request.user.is_authenticated:
+        return redirect('/login')
+
+    content = {
+        "username" : "",
+        "streak": "",
+        "email": "",
+        "profileImage": "https://i.imgur.com/QP8EIWK.png"
+    }
+
+
+    return render(request, 'profile.html', content)
