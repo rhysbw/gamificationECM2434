@@ -234,3 +234,6 @@ def profile_page(request):
 
 
     return render(request, 'profile.html', content)
+
+def test(request):
+    return render(request, 'testPage.html')

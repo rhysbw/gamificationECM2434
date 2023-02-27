@@ -9,5 +9,6 @@ urlpatterns = [
     path("delete/<username>", views.delete_request, name='delete'),
     path('', views.home_page, name="home"),
     path("leaderboard", views.leaderboard, name="leaderboard"),
-    path("profile", views.profile_page, name ="profile")
+    path("profile", views.profile_page, name ="profile"),
+    path("test", views.test, name = "test")
 ]

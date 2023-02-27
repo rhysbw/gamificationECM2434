@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Get Location</title>
+</head>
+<body>
+  <p>Latitude: <span id="latitude"></span></p>
+  <p>Longitude: <span id="longitude"></span></p>
+
+  <script>
+    function getLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.watchPosition(updateLocation, handleError);
+      } else {
+        alert("Geolocation is not supported by this browser.");
+      }
+    }
+
+    function updateLocation(position) {
+      document.getElementById('latitude').innerHTML = position.coords.latitude;
+      document.getElementById('longitude').innerHTML = position.coords.longitude;
+    }
+
+    function handleError(error) {
+      switch(error.code) {
+        case error.PERMISSION_DENIED:
+            document.getElementById('latitude').innerHTML = "failed to get position";
+            document.getElementById('longitude').innerHTML = "failed to get position";
+
+          alert("User denied the request for Geolocation.");
+          break;
+        case error.POSITION_UNAVAILABLE:
+          alert("Location information is unavailable.");
+          break;
+        case error.TIMEOUT:
+          alert("The request to get user location timed out.");
+          break;
+        case error.UNKNOWN_ERROR:
+          alert("An unknown error occurred.");
+          break;
+      }
+    }
+
+    getLocation();
+  </script>
+</body>
+</html>
