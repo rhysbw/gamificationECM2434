@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Leaderboard{% endblock %}
+
+{% block style %}
+    <style>
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+    th {
+        text-align: center;
+        padding: 8px;
+    }
+    td {
+        border: 1px solid black;
+        text-align: left;
+        padding: 8px;
+    }
+    </style>
+{% endblock %}
+
+{% block content %}
+    {{ UiT }} {{ position }} {{ url }}
+    <table><tr>
+        <th>Rank</th>
+        <th>Username</th>
+        <th>Current Streak</th>
+        <th>Overall Score</th>
+    </tr>
+    <?php $i = 1; ?>
+    {% for record in rankings %}
+        <tr>
+            <td><?php echo $i; ?></td>
+            <td>{{ record.user.username }}</td>
+            <td>{{ record.currentStreak }}</td>
+            <td>{{ record.totalPoints }}</td>
+        </tr>
+        <?php $i += 1; ?>
+    {% endfor %}
+    {% if not UiTS %}
+        <tr>
+        <td>...</td><td>...</td><td>...</td><td>...</td>
+        </tr>
+    {% endif %}
+    {% for record in extra %}
+        <tr>
+        <td>{{ position }}</td>
+        <td>{{ record.user.username }}</td>
+        <td>{{ record.currentStreak }}</td>
+        <td>{{ record.totalPoints }}</td>
+        </tr>
+    {% endfor %}
+    </table>
+{% endblock %}

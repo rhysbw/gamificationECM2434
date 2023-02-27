@@ -31,6 +31,7 @@ class UserInfo(models.Model):
         help_text="The users current streak",
         default=0,
         blank=True,
+        db_index=True,
     )
     # Group options
     GREEN = "GR"
@@ -48,7 +49,8 @@ class UserInfo(models.Model):
     )
 
     def __str__(self):
-        return str(self.user.id) + " " + str(self.user.username)
+        return str(self.user.id) + " " + str(self.user.username) + " [CS=" + \
+            str(self.currentStreak) + " TP=" + str(self.totalPoints) + "]"
 
     class Meta:
         verbose_name_plural = "Additional User Info"

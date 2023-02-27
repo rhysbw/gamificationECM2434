@@ -7,5 +7,7 @@ urlpatterns = [
     path("signup", views.signup, name="signup"),
     path("logout", views.logout_request, name="logout"),
     path("delete/<username>", views.delete_request, name='delete'),
-    path('', views.home_page, name="home")
+    path('', views.home_page, name="home"),
+    path("leaderboard/streak", views.leaderboard, name="lb_streak"),
+    path("leaderboard/total", views.leaderboard, name="lb_total")
 ]

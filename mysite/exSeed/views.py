@@ -6,8 +6,9 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
 
 from .forms import SignupForm
-from exSeed.models import Spot
+from .models import Spot, UserInfo
 import random
+import re
 
 from user_agents import parse
 
@@ -102,10 +103,55 @@ def home_page(request):
 
     spot = get_random_spot()
     spot_name = spot.name
-    image = filePaths[spot.image_pointer - 1]
+    image = filePaths[1]
+    # image = filePaths[spot.imageName]
 
     pageContent = {'file_path' : image,
                    'spot_name' : spot_name}
 
 
     return render(request, 'home.html', pageContent)
+
+def leaderboard(request):
+    user_agent = parse(request.META['HTTP_USER_AGENT'])
+    if not user_agent.is_mobile:  # Ensures the user is on mobile (users not allowed to access site on anything else)
+        return render(request, 'QRCodePage.html')
+
+    if not request.user.is_authenticated:  # Ensures user is logged in (this shouldn't be accessible if not)
+        return redirect('/login')
+
+    # All unapologetically robbed from above
+
+    # This block determines which sort of leaderboard is desired (streak or overall points)
+    url = request.get_full_path()
+    streak_lb = re.search("streak$", url)
+    sort_column = ""
+    if streak_lb:
+        sort_column = "-currentStreak"
+    else:
+        sort_column = "-totalPoints"
+
+    user = request.user.pk  # Gets the current users user id
+    top_sev_users = UserInfo.objects.order_by(sort_column)[:7]  # First 7 users
+    top_rankings = UserInfo.objects.order_by(sort_column)[:5]  # Top 5 users
+    user_in_top_seven = False  # If the user is in the top seven, then there needn't be a '...' and then their position
+    user_position = 1
+    for record in top_sev_users:
+        if user == record.user.pk:
+            user_in_top_seven = True
+            additional_rankings = UserInfo.objects.order_by(sort_column)[5:7]
+            break
+        user_position += 1
+
+    if not user_in_top_seven:
+        remaining_users = UserInfo.objects.order_by(sort_column)[8:]
+        for record in remaining_users:
+            if user == record.user.pk:
+                break
+            user_position += 1
+        additional_rankings = UserInfo.objects.order_by(sort_column)[user_position-1:user_position+1]
+
+    pageContent = {'rankings': top_rankings, 'currentUser': user, 'UiTS': user_in_top_seven,
+                   'extra': additional_rankings, 'position': user_position}
+    
+    return render(request, 'leaderboard.html', pageContent)
