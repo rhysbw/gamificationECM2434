@@ -6,13 +6,10 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.core.exceptions import ObjectDoesNotExist
 
 from .forms import SignupForm
-from .models import Spot, UserInfo
-from exSeed.models import Spot, PreviousSpotAttend
+from .models import Spot, UserInfo, PreviousSpotAttend
 import random
 import re
-
 from user_agents import parse
-
 import datetime
 
 # Create your views here.
@@ -155,22 +152,24 @@ def leaderboard(request):
     top_sev_users = UserInfo.objects.order_by(sort_column)[:7]  # First 7 users
     top_rankings = UserInfo.objects.order_by(sort_column)[:5]  # Top 5 users
     user_in_top_seven = False  # If the user is in the top seven, then there needn't be a '...' and then their position
-    user_position = 1
+    user_position = 1  # Keeps track of current user's position on the table
     for record in top_sev_users:
         if user == record.user.pk:
-            user_in_top_seven = True
+            user_in_top_seven = True  # Current user is in top 7
             additional_rankings = UserInfo.objects.order_by(sort_column)[5:7]
             break
         user_position += 1
 
-    if not user_in_top_seven:
-        remaining_users = UserInfo.objects.order_by(sort_column)[8:]
+    if not user_in_top_seven:  # The current user is not in the top seven, and thus more data is required
+        remaining_users = UserInfo.objects.order_by(sort_column)[8:]  # Gets the rest of data to see where user is
         for record in remaining_users:
-            if user == record.user.pk:
+            if user == record.user.pk:  # User found
                 break
             user_position += 1
         additional_rankings = UserInfo.objects.order_by(sort_column)[user_position-1:user_position+1]
+        # Gets data for user above and below current user
 
+    # Library for all data needed in the leaderboard
     pageContent = {'rankings': top_rankings, 'currentUser': user, 'UiTS': user_in_top_seven,
                    'extra': additional_rankings, 'position': user_position}
 
