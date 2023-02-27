@@ -1,15 +1,15 @@
-from django.apps import AppConfig
+from django.apps import AppConfig, apps
 import datetime
 import random
+
 
 class ExseedConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'exSeed'
 
     def ready(self):
-        from exSeed.models import Spot, PreviousSpotAttend
+        from .models import PreviousSpotAttend, Spot
         today = datetime.date.today()
-
         spots = PreviousSpotAttend.objects.filter(spotDay=today)
         yesterday = today - datetime.timedelta(days=1)
 

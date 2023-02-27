@@ -20,6 +20,10 @@ def signup(request):
     if not user_agent.is_mobile:
         return render(request, 'QRCodePage.html')
 
+    #Checks if user is logged in and if they are the user sent back to the home page
+    if request.user.is_authenticated:
+        return redirect('/')
+
     if request.method == 'POST':
         form = SignupForm(request.POST)
         if form.is_valid():
@@ -41,6 +45,10 @@ def login_request(request):
     user_agent = parse(request.META['HTTP_USER_AGENT'])
     if not user_agent.is_mobile:
         return render(request, 'QRCodePage.html')
+
+    # Checks if user is logged in and if they are the user sent back to the home page
+    if request.user.is_authenticated:
+        return redirect('/')
 
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
@@ -130,14 +138,16 @@ def home_page(request):
     return render(request, 'home.html', pageContent)
 
 def leaderboard(request):
+    # Checks if the user is on a desktop instead of mobile and if
+    # so renders the QR code page
     user_agent = parse(request.META['HTTP_USER_AGENT'])
-    if not user_agent.is_mobile:  # Ensures the user is on mobile (users not allowed to access site on anything else)
+    if not user_agent.is_mobile:
         return render(request, 'QRCodePage.html')
 
-    if not request.user.is_authenticated:  # Ensures user is logged in (this shouldn't be accessible if not)
+    # Checks if the user is logged in or not, if not they are automatically redirected
+    # to the login page
+    if not request.user.is_authenticated:
         return redirect('/login')
-
-    # All unapologetically robbed from above
 
     # This block determines which sort of leaderboard is desired (streak or overall points)
     url = request.get_full_path()
@@ -202,3 +212,25 @@ def leaderboard(request):
                    'extra': additional_rankings, 'position': user_position}
 
     return render(request, 'leaderboard.html', pageContent)
+
+def profile_page(request):
+    # Checks if the user is on a desktop instead of mobile and if
+    # so renders the QR code page
+    user_agent = parse(request.META['HTTP_USER_AGENT'])
+    if not user_agent.is_mobile:
+        return render(request, 'QRCodePage.html')
+
+    # Checks if the user is logged in or not, if not they are automatically redirected
+    # to the login page
+    if not request.user.is_authenticated:
+        return redirect('/login')
+
+    content = {
+        "username" : "",
+        "streak": "",
+        "email": "",
+        "profileImage": "https://i.imgur.com/QP8EIWK.png"
+    }
+
+
+    return render(request, 'profile.html', content)
