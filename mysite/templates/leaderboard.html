@@ -21,34 +21,31 @@
 {% endblock %}
 
 {% block content %}
-    {{ UiT }} {{ position }} {{ url }}
     <table><tr>
         <th>Rank</th>
         <th>Username</th>
         <th>Current Streak</th>
         <th>Overall Score</th>
     </tr>
-    <?php $i = 1; ?>
     {% for record in rankings %}
         <tr>
-            <td><?php echo $i; ?></td>
-            <td>{{ record.user.username }}</td>
-            <td>{{ record.currentStreak }}</td>
-            <td>{{ record.totalPoints }}</td>
+            <td>{{ record.0 }}</td>
+            <td>{{ record.1.user.username }}</td>
+            <td>{{ record.1.currentStreak }}</td>
+            <td>{{ record.1.totalPoints }}</td>
         </tr>
-        <?php $i += 1; ?>
     {% endfor %}
-    {% if not UiTS %}
+    {% if not noDots %}
         <tr>
         <td>...</td><td>...</td><td>...</td><td>...</td>
         </tr>
     {% endif %}
     {% for record in extra %}
         <tr>
-        <td>{{ position }}</td>
-        <td>{{ record.user.username }}</td>
-        <td>{{ record.currentStreak }}</td>
-        <td>{{ record.totalPoints }}</td>
+        <td>{{ record.0 }}</td>
+        <td>{{ record.1.user.username }}</td>
+        <td>{{ record.1.currentStreak }}</td>
+        <td>{{ record.1.totalPoints }}</td>
         </tr>
     {% endfor %}
     </table>
