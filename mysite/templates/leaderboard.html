@@ -4,52 +4,71 @@
 
 {% block style %}
     <style>
-    table {
-        border-collapse: collapse;
-        width: 100%;
-    }
-    th {
-        text-align: center;
-        padding: 8px;
-    }
-    td {
-        border: 1px solid black;
-        text-align: left;
-        padding: 8px;
-    }
+        .page_container {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            height: 100vh;
+            margin-top: 20px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 90%;
+            background-color: white;
+            border: 6px solid #285430;
+        }
+        th {
+            text-align: center;
+            padding: 8px;
+        }
+        td {
+            border: 1px solid black;
+            text-align: left;
+            padding: 8px;
+        }
     </style>
 {% endblock %}
 
 {% block content %}
-    {{ UiT }} {{ position }} {{ url }}
-    <table><tr>
-        <th>Rank</th>
-        <th>Username</th>
-        <th>Current Streak</th>
-        <th>Overall Score</th>
-    </tr>
-    <?php $i = 1; ?>
-    {% for record in rankings %}
-        <tr>
-            <td><?php echo $i; ?></td>
-            <td>{{ record.user.username }}</td>
-            <td>{{ record.currentStreak }}</td>
-            <td>{{ record.totalPoints }}</td>
-        </tr>
-        <?php $i += 1; ?>
-    {% endfor %}
-    {% if not UiTS %}
-        <tr>
-        <td>...</td><td>...</td><td>...</td><td>...</td>
-        </tr>
-    {% endif %}
-    {% for record in extra %}
-        <tr>
-        <td>{{ position }}</td>
-        <td>{{ record.user.username }}</td>
-        <td>{{ record.currentStreak }}</td>
-        <td>{{ record.totalPoints }}</td>
-        </tr>
-    {% endfor %}
-    </table>
+    <div class = "page_container">
+        <h2> Leaderboard Type </h2>
+        <div>
+            <input type="radio" id="total" name="ranking_type" value="total">
+            <label for="total">Total</label>
+
+            <input type="radio" id="streak" name="ranking_type" value="streak">
+            <label for="streak">Streak</label>
+        </div>
+        <br>
+        <table>
+            <tr>
+                <th>Rank</th>
+                <th>Username</th>
+                <th>Current Streak</th>
+                <th>Overall Score</th>
+            </tr>
+            {% for record in rankings %}
+                <tr>
+                    <td>{{ record.0 }}</td>
+                    <td>{{ record.1.user.username }}</td>
+                    <td>{{ record.1.currentStreak }}</td>
+                    <td>{{ record.1.totalPoints }}</td>
+            </tr>
+            {% endfor %}
+            {% if not noDots %}
+                <tr>
+                    <td>...</td><td>...</td><td>...</td><td>...</td>
+                </tr>
+            {% endif %}
+            {% for record in extra %}
+                <tr>
+                    <td>{{ record.0 }}</td>
+                    <td>{{ record.1.user.username }}</td>
+                    <td>{{ record.1.currentStreak }}</td>
+                    <td>{{ record.1.totalPoints }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
 {% endblock %}

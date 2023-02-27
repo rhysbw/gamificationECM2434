@@ -20,6 +20,10 @@ def signup(request):
     if not user_agent.is_mobile:
         return render(request, 'QRCodePage.html')
 
+    #Checks if user is logged in and if they are the user sent back to the home page
+    if request.user.is_authenticated:
+        return redirect('/')
+
     if request.method == 'POST':
         form = SignupForm(request.POST)
         if form.is_valid():
@@ -41,6 +45,10 @@ def login_request(request):
     user_agent = parse(request.META['HTTP_USER_AGENT'])
     if not user_agent.is_mobile:
         return render(request, 'QRCodePage.html')
+
+    # Checks if user is logged in and if they are the user sent back to the home page
+    if request.user.is_authenticated:
+        return redirect('/')
 
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
@@ -130,47 +138,102 @@ def home_page(request):
     return render(request, 'home.html', pageContent)
 
 def leaderboard(request):
+    # Checks if the user is on a desktop instead of mobile and if
+    # so renders the QR code page
     user_agent = parse(request.META['HTTP_USER_AGENT'])
-    if not user_agent.is_mobile:  # Ensures the user is on mobile (users not allowed to access site on anything else)
+    if not user_agent.is_mobile:
         return render(request, 'QRCodePage.html')
 
-    if not request.user.is_authenticated:  # Ensures user is logged in (this shouldn't be accessible if not)
+    # Checks if the user is logged in or not, if not they are automatically redirected
+    # to the login page
+    if not request.user.is_authenticated:
         return redirect('/login')
-
-    # All unapologetically robbed from above
 
     # This block determines which sort of leaderboard is desired (streak or overall points)
     url = request.get_full_path()
-    streak_lb = re.search("streak$", url)
+    lb_type = request.GET.get('q', '')
     sort_column = ""
-    if streak_lb:
+    if lb_type == "streak":
         sort_column = "-currentStreak"
-    else:
+    elif lb_type == "total":
         sort_column = "-totalPoints"
+    else:
+        return redirect('/leaderboard?q=streak')
 
     user = request.user.pk  # Gets the current users user id
-    top_sev_users = UserInfo.objects.order_by(sort_column)[:7]  # First 7 users
     top_rankings = UserInfo.objects.order_by(sort_column)[:5]  # Top 5 users
+    user_in_top_five = False  # If user is in top five, only top five should be shown
     user_in_top_seven = False  # If the user is in the top seven, then there needn't be a '...' and then their position
-    user_position = 1  # Keeps track of current user's position on the table
-    for record in top_sev_users:
+    user_position = None  # Keeps track of current user's position on the table
+    position = 0  # Keeps track of current records position
+    rank_and_no = []  # Lines up record with their position on the leaderboard
+    additional_rankings = []  # Holds additional rankings needed
+
+    # If the user is within the top 5, only the top 5 need be shown
+    for record in top_rankings:
+        position += 1
+        RaN = [position, record]
+        rank_and_no.append(RaN)
         if user == record.user.pk:
-            user_in_top_seven = True  # Current user is in top 7
-            additional_rankings = UserInfo.objects.order_by(sort_column)[5:7]
-            break
-        user_position += 1
+            user_in_top_five = True
+            user_position = position
 
-    if not user_in_top_seven:  # The current user is not in the top seven, and thus more data is required
-        remaining_users = UserInfo.objects.order_by(sort_column)[8:]  # Gets the rest of data to see where user is
-        for record in remaining_users:
-            if user == record.user.pk:  # User found
+    # Elif the user is within the top 7, gather only their record and any above (so if 6, get only 6)
+    if not user_in_top_five:
+        six_and_seven = UserInfo.objects.order_by(sort_column)[5:7]
+        for record in six_and_seven:
+            position += 1
+            RaN = [position, record]
+            additional_rankings.append(RaN)
+            if user == record.user.pk:
+                user_in_top_seven = True
+                user_position = position
                 break
-            user_position += 1
-        additional_rankings = UserInfo.objects.order_by(sort_column)[user_position-1:user_position+1]
-        # Gets data for user above and below current user
 
+    # Else, get the user's record, and their neighbours (one above, one below)
+    if not user_in_top_seven and not user_in_top_five:
+        additional_rankings = []
+        remainder = UserInfo.objects.order_by(sort_column)[7:]
+        for record in remainder:
+            position += 1
+            if user == record.user.pk:
+                user_position = position
+                break
+        adjacent = UserInfo.objects.order_by(sort_column)[user_position-2:user_position+1]
+        j = -1
+        for record in adjacent:
+            RaN = [user_position + j, record]
+            additional_rankings.append(RaN)
+            j += 1
+
+    no_dots = user_in_top_five or user_in_top_seven
     # Library for all data needed in the leaderboard
-    pageContent = {'rankings': top_rankings, 'currentUser': user, 'UiTS': user_in_top_seven,
+    pageContent = {'rankings': rank_and_no, 'currentUser': user, 'noDots': no_dots,
                    'extra': additional_rankings, 'position': user_position}
 
     return render(request, 'leaderboard.html', pageContent)
+
+def profile_page(request):
+    # Checks if the user is on a desktop instead of mobile and if
+    # so renders the QR code page
+    user_agent = parse(request.META['HTTP_USER_AGENT'])
+    if not user_agent.is_mobile:
+        return render(request, 'QRCodePage.html')
+
+    # Checks if the user is logged in or not, if not they are automatically redirected
+    # to the login page
+    if not request.user.is_authenticated:
+        return redirect('/login')
+
+    content = {
+        "username" : "",
+        "streak": "",
+        "email": "",
+        "profileImage": "https://i.imgur.com/QP8EIWK.png"
+    }
+
+
+    return render(request, 'profile.html', content)
+
+def test(request):
+    return render(request, 'testPage.html')
