@@ -40,12 +40,8 @@ ALLOWED_HOSTS = ["exseed.duckdns.org",
 # Application definition
 
 INSTALLED_APPS = [
-<<<<<<< Updated upstream
     'exSeed.apps.ExseedConfig',
-=======
-    'exSeed',
     'django_extensions',
->>>>>>> Stashed changes
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
