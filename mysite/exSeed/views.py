@@ -166,23 +166,41 @@ def leaderboard(request):
     user_in_top_seven = False  # If the user is in the top seven, then there needn't be a '...' and then their position
     user_position = None  # Keeps track of current user's position on the table
     position = 0  # Keeps track of current records position
+    prev_position_score = None  # Keeps track of the current record's score for sake of repeated positions
+    column_name = sort_column[1:]  # Removes '-' from column name
+    buffer = 0  # Handles repeated positions
     rank_and_no = []  # Lines up record with their position on the leaderboard
     additional_rankings = []  # Holds additional rankings needed
 
     # If the user is within the top 5, only the top 5 need be shown
     for record in top_rankings:
         position += 1
+        if prev_position_score is None:
+            pass
+        elif prev_position_score == getattr(record, column_name):
+            position -= 1
+            buffer += 1
+        else:
+            position += buffer
+            buffer = 0
         RaN = [position, record]
         rank_and_no.append(RaN)
         if user == record.user.pk:
             user_in_top_five = True
             user_position = position
+        prev_position_score = getattr(record, column_name)
 
     # Elif the user is within the top 7, gather only their record and any above (so if 6, get only 6)
     if not user_in_top_five:
         six_and_seven = UserInfo.objects.order_by(sort_column)[5:7]
         for record in six_and_seven:
             position += 1
+            if prev_position_score == getattr(record, column_name):
+                position -= 1
+                buffer += 1
+            else:
+                position += buffer
+                buffer = 0
             RaN = [position, record]
             additional_rankings.append(RaN)
             if user == record.user.pk:
