@@ -254,4 +254,8 @@ def profile_page(request):
     return render(request, 'profile.html', content)
 
 def test(request):
-    return render(request, 'testPage.html')
+
+    content = {'lat': 50.724864,
+               'long': -3.5127296
+               }
+    return render(request, 'testPage.html', content)

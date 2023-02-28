@@ -80,12 +80,79 @@
       right: 10%;
     }
 
+    .spot_button:disabled {
+        color: grey;
+    }
+
     
 
 
 
   </style>
 {% endblock style %}
+
+{% block script %}
+<script>
+    const targetLatitude = {{ spot_latitude }};
+    const targetLongitude = {{ spot_longitude }};
+    const maxDistance = 50; // meters
+
+    function distance(position, targetLat, targetLng) {
+      const R = 6371000; // Earth's radius in meters
+      const lat1 = position.coords.latitude;
+      const lng1 = position.coords.longitude;
+      const lat2 = targetLat;
+      const lng2 = targetLng;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLng = (lng2 - lng1) * Math.PI / 180;
+      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLng / 2) * Math.sin(dLng / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      const distance = R * c;
+      return Math.round(distance);
+    }
+
+    function getLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.watchPosition(checkLocation, handleError);
+      } else {
+          alert("Geolocation is not supported by this browser.");
+      }
+    }
+
+    function checkLocation(position) {
+        dist_out = distance(position, targetLatitude, targetLongitude)
+        if (dist_out <= maxDistance) {
+        } else {
+            document.getElementById("here_button").innerHTML = dist_out + 'm';
+            document.getElementById("here_button").disabled = true;
+        }
+
+    }
+
+    function handleError(error) {
+      switch(error.code) {
+        case error.PERMISSION_DENIED:
+
+          alert("User denied the request for Geolocation.");
+          break;
+        case error.POSITION_UNAVAILABLE:
+          alert("Location information is unavailable.");
+          break;
+        case error.TIMEOUT:
+          alert("The request to get user location timed out.");
+          break;
+      }
+    }
+    getLocation();
+
+
+
+
+</script>
+
+{% endblock script %}
 
 {% block content %}
 
