@@ -33,6 +33,7 @@ ALLOWED_HOSTS = ["exseed.duckdns.org",
                  '192.168.0.31',  # Ben IP
                  '10.229.79.209',  # Sam IP
                  'localhost',
+                 '10.0.1.44'
                  ]
 
 
