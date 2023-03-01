@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 
 from .forms import SignupForm
-from .models import Spot, UserInfo, PreviousSpotAttend
+from .models import Spot, UserInfo, PreviousSpotAttend, Avatar
 import random
 
 from user_agents import parse
@@ -47,7 +47,7 @@ def signup(request):
             The Django-supplied web request that contains information about the current request to see this view
     :return render()
             Redirects the user to '/' where they will be able to see the spot of the day
-    @author: Sam Tebbet
+    @author: Sam Tebbet, Benjamin Pickup
     """
     # Checks if the user is on a desktop instead of mobile and if
     # so renders the QR code page
@@ -63,10 +63,25 @@ def signup(request):
         form = SignupForm(request.POST)
         if form.is_valid():
             form.save()
-            username = form.cleaned_data.get('username')
-            email = form.cleaned_data.get('email')
+            account_username = form.cleaned_data.get('username')
+            account_email = form.cleaned_data.get('email')
             raw_password = form.cleaned_data.get('password1')
-            user = authenticate(username=username, password=raw_password)
+
+            # Create a record in additional user info as long as there isn't already a record then
+            try:
+                user_account = User.objects.get(username=account_username)
+                # Fills the userInfo record with data
+                userinfo = UserInfo.objects.create(
+                    user=user_account,  # Links new user to new data in UserInfo
+                    title='Sapling',  # Placeholder default title
+                )
+                # Saves the record into the table
+                userinfo.save()
+            except:
+                # Here a fail would only a occur if there was that user was already in UserInfo
+                pass
+
+            user = authenticate(username=account_username, password=raw_password)
             login(request, user)
             return redirect('home')
     else:
