@@ -67,22 +67,18 @@ def signup(request):
             account_email = form.cleaned_data.get('email')
             raw_password = form.cleaned_data.get('password1')
 
-            # Create a record in additional user info as long as their isn't already a record then
+            # Create a record in additional user info as long as there isn't already a record then
             try:
-                user_account = User.objects.get(username = account_username)
-                # Fills the userInfo record with default data
+                user_account = User.objects.get(username=account_username)
+                # Fills the userInfo record with data
                 userinfo = UserInfo.objects.create(
-                    user=user_account,
-                    avatarId=Avatar.objects.get(pk=1), # gets the default avatar
-                    title='Sapling',
-                    totalPoints=0,
-                    currentStreak=0,
-                    group=UserInfo.GREEN,  # Replace with the desired group (e.g. UserInfo.BLUE)
+                    user=user_account,  # Links new user to new data in UserInfo
+                    title='Sapling',  # Placeholder default title
                 )
                 # Saves the record into the table
                 userinfo.save()
             except:
-                #Here a fail would only a occur if there was that user was already in UserInfo
+                # Here a fail would only a occur if there was that user was already in UserInfo
                 pass
 
             user = authenticate(username=account_username, password=raw_password)
