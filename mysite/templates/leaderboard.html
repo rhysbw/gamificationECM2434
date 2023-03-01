@@ -108,6 +108,13 @@ position - the current user's position on the table-->
             {% endif %}
             {% for record in extra %}
                 <tr
+                {% if record.0 == 1 %}
+                    id="first"
+                {% elif record.0 == 2 %}
+                    id="second"
+                {% elif record.0 == 3 %}
+                    id="third"
+                {% endif %}
                 {% if record.1.user.pk == currentUser %}
                     class="currentUser"
                 {% endif %}

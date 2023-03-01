@@ -12,6 +12,32 @@ import re
 from user_agents import parse
 import datetime
 
+
+def position_buffer_calc(position, buffer, record, column_name, prev_pos_score):
+    """Determines if there are any repeated score values that deserve repeated ranks
+
+    Args:
+        position (int): The current position being evaluated
+        buffer (int): The buffer int, allowing ranks to be skipped in the presence of repeated score
+        record (QuerySet): The current position's QuerySet
+        column_name (str): Name of the column being ranked
+        prev_pos_score(int): The score of the previous record
+
+    Returns:
+        (int, int): The position and buffer values
+    """
+    new_pos = position  # New position
+    new_buf = buffer  # New buffer
+    if prev_pos_score is None:
+        pass
+    elif prev_pos_score == getattr(record, column_name):
+        new_buf += 1
+    else:
+        new_pos += buffer
+        new_buf = 1
+    print(new_pos, " ", new_buf, " ", prev_pos_score, " ", getattr(record, column_name))
+    return new_pos, new_buf
+
 # Create your views here.
 def signup(request):
     # Checks if the user is on a desktop instead of mobile and if
@@ -150,81 +176,91 @@ def leaderboard(request):
         return redirect('/login')
 
     # This block determines which sort of leaderboard is desired (streak or overall points)
-    url = request.get_full_path()
+    # The 'other' variable ensures that records are ordered by the not-selected score after initial ordering
+    # sp that tying users are represented in order of the other attribute (seemed fair)
     lb_type = request.GET.get('q', '')
-    sort_column = ""
+    sort_column, other = "", ""
     if lb_type == "streak":
         sort_column = "-currentStreak"
+        other = "-totalPoints"
     elif lb_type == "total":
         sort_column = "-totalPoints"
+        other = "-currentStreak"
     else:
         return redirect('/leaderboard?q=streak')
 
     user = request.user.pk  # Gets the current users user id
-    top_rankings = UserInfo.objects.order_by(sort_column)[:5]  # Top 5 users
+    top_rankings = UserInfo.objects.order_by(sort_column, other)[:5]  # Top 5 users
     user_in_top_five = False  # If user is in top five, only top five should be shown
     user_in_top_seven = False  # If the user is in the top seven, then there needn't be a '...' and then their position
     user_position = None  # Keeps track of current user's position on the table
-    position = 0  # Keeps track of current records position
+    position = 1  # Keeps track of current records position
     prev_position_score = None  # Keeps track of the current record's score for sake of repeated positions
+    prev_prev_position_score = None
     column_name = sort_column[1:]  # Removes '-' from column name
-    buffer = 0  # Handles repeated positions
+    buffer = 1  # Handles repeated positions
     rank_and_no = []  # Lines up record with their position on the leaderboard
     additional_rankings = []  # Holds additional rankings needed
 
     # If the user is within the top 5, only the top 5 need be shown
     for record in top_rankings:
-        position += 1
-        if prev_position_score is None:
-            pass
-        elif prev_position_score == getattr(record, column_name):
-            position -= 1
-            buffer += 1
-        else:
-            position += buffer
-            buffer = 0
+        position, buffer = position_buffer_calc(position, buffer, record, column_name, prev_position_score)
         RaN = [position, record]
         rank_and_no.append(RaN)
         if user == record.user.pk:
             user_in_top_five = True
-            user_position = position
+            user_position = position + buffer
         prev_position_score = getattr(record, column_name)
 
     # Elif the user is within the top 7, gather only their record and any above (so if 6, get only 6)
     if not user_in_top_five:
-        six_and_seven = UserInfo.objects.order_by(sort_column)[5:7]
+        six_and_seven = UserInfo.objects.order_by(sort_column, other)[5:7]
         for record in six_and_seven:
-            position += 1
-            if prev_position_score == getattr(record, column_name):
-                position -= 1
-                buffer += 1
-            else:
-                position += buffer
-                buffer = 0
+            position, buffer = position_buffer_calc(position, buffer, record, column_name, prev_position_score)
             RaN = [position, record]
             additional_rankings.append(RaN)
             if user == record.user.pk:
                 user_in_top_seven = True
-                user_position = position
+                user_position = position + buffer
                 break
+            prev_position_score = getattr(record, column_name)
 
     # Else, get the user's record, and their neighbours (one above, one below)
     if not user_in_top_seven and not user_in_top_five:
         additional_rankings = []
-        remainder = UserInfo.objects.order_by(sort_column)[7:]
+        remainder = UserInfo.objects.order_by(sort_column, other)[7:]
+        prev_buf = None
         for record in remainder:
-            position += 1
             if user == record.user.pk:
-                user_position = position
+                user_position = position + buffer
                 break
-        adjacent = UserInfo.objects.order_by(sort_column)[user_position-2:user_position+1]
-        j = -1
-        for record in adjacent:
-            RaN = [user_position + j, record]
-            additional_rankings.append(RaN)
-            j += 1
+            prev_buf = buffer
+            position, buffer = position_buffer_calc(position, buffer, record, column_name, prev_position_score)
+            prev_prev_position_score = prev_position_score
+            prev_position_score = getattr(record, column_name)
 
-    no_dots = user_in_top_five or user_in_top_seven
+        # By this point, if user_position doesn't exist, the user is NOT in the UserInfo table!!!
+        if user_position is not None:
+            adjacent = UserInfo.objects.order_by(sort_column, other)[user_position-2:user_position+1]
+            if prev_buf is None:
+                pass
+            elif buffer == 1:
+                buffer = prev_buf
+                position -= buffer
+            else:
+                buffer -= 1
+            j = -1
+            for record in adjacent:
+                if j == -1:
+                    position, buffer = position_buffer_calc(position, buffer, record, column_name, prev_prev_position_score)
+                elif j == 0 or j == 1:
+                    position, buffer = position_buffer_calc(position, buffer, record, column_name, prev_position_score)
+                prev_position_score = getattr(record, column_name)
+                RaN = [position, record]
+                additional_rankings.append(RaN)
+                j += 1
+
+    no_dots = user_in_top_five or user_in_top_seven or user_position is None
     # Library for all data needed in the leaderboard
     pageContent = {'rankings': rank_and_no, 'currentUser': user, 'noDots': no_dots,
                    'extra': additional_rankings, 'position': user_position}
