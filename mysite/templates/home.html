@@ -5,171 +5,191 @@
 
 <!-- author Benjamin --->
 {% block style %}
-  <style>
-    .page_container {
-      position: relative;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;      
-    }
+    <style>
+        .page_container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
 
-    .image_container {
-      position: absolute;
-      top: 0;
-      left: 0;
-      height: 50%;
-      width: 100%;
-      display: flex;
-      justify-content: center; 
-      align-items: center;
-
-
-    }
-
-    .text_container {
-      position: absolute;
-      top: 50%;
-      height: 20%;
-      width: 70%;
-      align-content: center;
-      text-align: center;
-        padding-bottom: 5%;
-
-    }
+        .image_container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 50%;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
 
 
-    .button_container {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      height: 30%;
-      width: 100%;
+        }
 
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }   
+        .text_container {
+            position: absolute;
+            top: 50%;
+            height: 20%;
+            width: 70%;
+            align-content: center;
+            text-align: center;
+            padding-bottom: 5%;
 
-    .image_container img {
-      position:absolute;
-      display: inline-grid;
-      border-radius: 10px;
-      width: auto;
-      height: 90%;
-      top: 5%;
-      box-shadow: 0px 0px 10px 5px #285430;
-    }
-    
-    .here_button, .spot_button {
-      background-color: #285430;
-      color: white;
-      height: 15%;
-      width: 30%;
-      border: none;
-      bottom: 30%;
-      border-radius: 5px;    
-    }
+        }
 
 
-    .here_button {
-      position: absolute;
-      left: 10%;
-    }
+        .button_container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 30%;
+            width: 100%;
 
-    .spot_button {
-      position: absolute;
-      right: 10%;
-    }
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
-    .spot_button:disabled {
-        color: grey;
-    }
+        .image_container img {
+            position: absolute;
+            display: inline-grid;
+            border-radius: 10px;
+            width: auto;
+            height: 90%;
+            top: 5%;
+            box-shadow: 0px 0px 10px 5px #285430;
+        }
 
-  </style>
+        .here_button, .spot_button {
+            background-color: #285430;
+            color: white;
+            height: 15%;
+            width: 30%;
+            border: none;
+            bottom: 30%;
+            border-radius: 5px;
+        }
+
+
+        .here_button {
+            position: absolute;
+            left: 10%;
+        }
+
+        .spot_button {
+            position: absolute;
+            right: 10%;
+        }
+
+        .spot_button:disabled {
+            color: grey;
+        }
+
+    </style>
 {% endblock style %}
 
 {% block script %}
-<script>
-    const targetLatitude = {{ spot_latitude }};
-    const targetLongitude = {{ spot_longitude }};
-    const maxDistance = 50; // meters
+    <!-- author Benjamin and Rhys --->
+    <script>
+        const targetLatitude = {{ spot_latitude }};
+        const targetLongitude = {{ spot_longitude }};
+        const maxDistance = 50; // Radius to be within of the spot
+        /**
+         * Calculates the distance in meters the user is from the spot
+         * @param position Lat and Long of the User
+         * @param {number} targetLat Latitude of the spot
+         * @param {number} targetLng Longitude of the spot
+         * @returns {number} Distance in meters
+         */
+        function distance(position, targetLat, targetLng) {
 
-    function distance(position, targetLat, targetLng) {
-      const R = 6371000; // Earth's radius in meters
-      const lat1 = position.coords.latitude;
-      const lng1 = position.coords.longitude;
-      const lat2 = targetLat;
-      const lng2 = targetLng;
-      const dLat = (lat2 - lat1) * Math.PI / 180;
-      const dLng = (lng2 - lng1) * Math.PI / 180;
-      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            const R = 6371000; // Earth's radius in meters
+            const lat1 = position.coords.latitude; // current latitude of user
+            const lng1 = position.coords.longitude; // current longitude of user
+            const lat2 = targetLat;
+            const lng2 = targetLng;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLng = (lng2 - lng1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
                 Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
                 Math.sin(dLng / 2) * Math.sin(dLng / 2);
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      const distance = R * c;
-      return Math.round(distance);
-    }
-
-    function getLocation() {
-      if (navigator.geolocation) {
-        navigator.geolocation.watchPosition(checkLocation, handleError);
-      } else {
-          alert("Geolocation is not supported by this browser.");
-      }
-    }
-
-    function checkLocation(position) {
-        dist_out = distance(position, targetLatitude, targetLongitude)
-        if (dist_out <= maxDistance) {
-        } else {
-            document.getElementById("here_button").innerHTML = dist_out + 'm';
-            document.getElementById("here_button").disabled = true;
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            const distance = R * c;
+            return Math.round(distance);
         }
 
-    }
+        /**
+         * Begins the collection of GPS data
+         */
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.watchPosition(checkLocation, handleError); // Current GPS location data call
+            } else { // if error
+                alert("Geolocation is not supported by this browser.");
+            }
+        }
 
-    function handleError(error) {
-      switch(error.code) {
-        case error.PERMISSION_DENIED:
+        /**
+         * Checks to see if user is within a specified radius of the spot
+         * @param position
+         */
+        function checkLocation(position) {
+            dist_out = distance(position, targetLatitude, targetLongitude)
+            if (dist_out > maxDistance) {
+                // Set button to show distance away from spot
+                document.getElementById("here_button").innerHTML = dist_out + 'm';
+                // Disable button from being pressed and adding points to leaderboard
+                document.getElementById("here_button").disabled = true;
+            }
+        }
 
-          alert("User denied the request for Geolocation.");
-          break;
-        case error.POSITION_UNAVAILABLE:
-          alert("Location information is unavailable.");
-          break;
-        case error.TIMEOUT:
-          alert("The request to get user location timed out.");
-          break;
-      }
-    }
+        /**
+         * This function handles errors related to GeoLocation
+         * @param error
+         */
+        function handleError(error) {
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
 
-    getLocation();
+                    alert("User denied the request for Geolocation.");
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    alert("Location information is unavailable.");
+                    break;
+                case error.TIMEOUT:
+                    alert("The request to get user location timed out.");
+                    break;
+            }
+        }
 
-</script>
+        // Begins location script
+        getLocation();
+
+    </script>
 {% endblock script %}
 
 <!--- block that will add the body content into base.html --->
 {% block content %}
-<div class = "page_container">
-  <div class = "image_container">
-    <img src="{{ file_path }}" class="image">
+    <div class="page_container">
+        <div class="image_container">
+            <img src="{{ file_path }}" class="image">
 
-  </div>
-  <div class = "text_container"> 
-      <h1> {{spot_name}}</h1>
-  {{ spot_description }}
-  </div>
-  <div class = "button_container">
-    <button class = "here_button" id="here_button" onclick="alert('You have arrived');">
-        I'm Here!
-    </button>
+        </div>
+        <div class="text_container">
+            <h1> {{ spot_name }}</h1>
+            {{ spot_description }}
+        </div>
+        <div class="button_container">
+            <button class="here_button" id="here_button" onclick="alert('You have arrived');">
+                I'm Here!
+            </button>
 
-    <button class = "spot_button">
-        <a href = "https://maps.google.com/?q={{ spot_latitude }},{{ spot_longitude }}"> Find Spot </a>
-    </button>
+            <button class="spot_button">
+                <a href="https://maps.google.com/?q={{ spot_latitude }},{{ spot_longitude }}"> Find Spot </a>
+            </button>
 
-  </div>
+        </div>
 
-</div>
+    </div>
 {% endblock %}
