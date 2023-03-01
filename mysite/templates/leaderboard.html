@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block title %}Leaderboard{% endblock %}
-
+<!--- author Rowan and Benjamin --->
 {% block style %}
     <style>
         .page_container {
@@ -61,6 +61,7 @@ extra - any additional records needed, in the same format as rankings. These are
     6 and 7 (if user is 7th), or the user and one above and below their position.
 position - the current user's position on the table-->
 
+<!--- block that will add the body content into base.html --->
 {% block content %}
     <div class = "page_container">
     {{ test }}
@@ -108,6 +109,13 @@ position - the current user's position on the table-->
             {% endif %}
             {% for record in extra %}
                 <tr
+                {% if record.0 == 1 %}
+                    id="first"
+                {% elif record.0 == 2 %}
+                    id="second"
+                {% elif record.0 == 3 %}
+                    id="third"
+                {% endif %}
                 {% if record.1.user.pk == currentUser %}
                     class="currentUser"
                 {% endif %}

@@ -4,12 +4,9 @@
 {% load static %}
 {% block title %}Profile{% endblock %}
 
+<!-- author Sam and Benjamin -->
 {% block style %}
   <style>
-
-
-
-
     .page-container {
         display: flex;
         justify-content: center;
@@ -65,19 +62,18 @@
 {% endblock style %}
 
 
-
+<!--- block that will add the body content into base.html --->
 {% block content %}
   <div class="page-container">
     <div class = "userContainer">
       <div class = "circle">
         <img src="{{profileImage}}">
       </div>
-      <div class = "userContent"> 
-        <p class="userName"> Username :{{username}} </p>
-        Streak: {{ streak }} <br>
-        Email: {{ email }} <br>
 
-        
+      <div class = "userContent"> 
+        <p class="userName"> Username: {{user.username}} </p>
+        Streak: {{ streak }} <br>
+        Email: {{ user.email }} <br>
       </div>
 
 
