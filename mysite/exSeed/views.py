@@ -163,6 +163,7 @@ def home_page(request):
 
     return render(request, 'home.html', pageContent)
 
+
 def leaderboard(request):
     # Checks if the user is on a desktop instead of mobile and if
     # so renders the QR code page
@@ -279,14 +280,13 @@ def profile_page(request):
     if not request.user.is_authenticated:
         return redirect('/login')
 
+    user = request.user.pk
+    userinfo = UserInfo.objects.filter(user_id=user).values()
+    streak = userinfo[0]['currentStreak']
     content = {
-        "username" : "",
-        "streak": "",
-        "email": "",
+        "streak": streak,
         "profileImage": "https://i.imgur.com/QP8EIWK.png"
     }
-
-
     return render(request, 'profile.html', content)
 
 def test(request):
