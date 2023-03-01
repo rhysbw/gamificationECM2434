@@ -2,9 +2,36 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator, DecimalValidator
 
+"""
+Developer note:
+When no field is explicitly defined as the primary key, Django automatically creates an auto-incrementing integer primary key.
+This has been used for every model, and thus there are no explicitly stated primary keys
+These primary keys can be referenced to with .pk if needed
+"""
 
 # Create your models here.
 class UserInfo(models.Model):
+    """This table holds additional data on each user
+
+    Columns:
+        user (OneToOneField): This is a link to an existing user in the auth_user table.
+            Each user can only have ONE entry in UserInfo (OneToOne relation), and if the user is deleted, the CASCADE option ensures this
+            record will also be deleted
+        avatarId (ForeignKey): This records what avatar this user has chosen to represent them. This is the avatar ID from the Avatar table
+            It defaults to 1 (the first ID in the avatar table)
+        title (CharField): This is the title this user has chosen to represent them on their user page, visable to other users. Can be empty
+        totalPoints (PositiveSmallIntegerField): Holds this users total points acquired whilst playing the game
+        currentStreak (PositiveSmallIntegerField): Holds this users current points earned back-to-back (daily)
+        group (CharField): Holds the group this user is affiliated with. Can be empty
+
+    Functions:
+        __str__(self): Defines how each record in the table is represented (E.g. 7 dev [CS=1 TP=1]) (AKA ID Username [currentStreak totalPoints])
+    
+    Other:
+        The meta class defines how information from this table is referred to in the admin screen (named for purpose of clarity)
+
+    @author Rowan N
+    """
     user = models.OneToOneField(
         User,
         help_text="Linking this information to the user in auth_User it relates to",
@@ -58,6 +85,19 @@ class UserInfo(models.Model):
 
 
 class Avatar(models.Model):
+    """This table holds all data on the avatars users can choose to represent themselves
+
+    Columns:
+        imageName (CharField): Holds the name of the .png file this image is saved as
+        avatarTitle (CharField): The name of this avatar, used as a human-readable way to distinguish avatars
+
+    Functions:
+        __str__(self): Defines how each record in the table is represented (E.g. avatar1.png) (AKA imageName)
+    
+    Other:
+
+    @author Rowan N
+    """
     imageName = models.CharField(
         help_text="The png name of the avatar image",
         max_length=100,
@@ -72,6 +112,26 @@ class Avatar(models.Model):
 
 
 class Spot(models.Model):
+    """This table holds all data on the spots
+
+    Columns:
+        name (CharField): The name of a given spot. This MUST be a unique value
+        desc (TextField): A description for the spot, to be found underneath it's picture on the spot page. Can be empty
+        latitude (DecimalField): The North-South latitude of this spot. Allows for six decimal places of accuracy. Cannot go over 90 or
+            under -90
+        longitude (DecimalField): The East-West longitude of this spot. Allows for sex decimal places of accuracy. Cannot go over 180
+            or under -180
+        average_attendance_int (PositiveSmallIntegerField): The average attendance of this spot when it is the spot of the day
+        imageName (CharField): The .png name of the file that holds the image for this spot. Can be empty
+
+    Functions:
+        __str__(self): Defines how each record in the table is represented (E.g. Duck Pond (ID 1)) (AKA name (spotID))
+    
+    Other:
+        The meta class defines how information from this table is referred to in the admin screen (named for purpose of clarity)
+
+    @author Rowan N
+    """
     name = models.CharField(
         help_text="A spot's name",
         unique=True,  # Unique implies db_index = True
@@ -120,6 +180,23 @@ class Spot(models.Model):
 
 
 class SpotRegister(models.Model):
+    """This table holds which users have attended which spot-instance (record of when a spot is the spot of the day). 
+
+    Columns:
+        uId (ForeignKey): The primary key for the user that has attended the spot. A user can attend multiple spots, and as such
+            a user can be represented multiple times in the table
+        psaId (ForeignKey): The primary key of the spot-instance (previousSpotAttend). This is the spot and the day the spot was
+            the spot of the day. Since multiple users can register at the same spot, this can be found multiple times in the table
+
+    Functions:
+        __str__(self): Defines how each record in the table is represented (E.g. dev attended the spot on 2023-03-01) 
+                                                                           (AKA uId.username attended the spot on psaId.spotDay))
+    
+    Other:
+        The meta class defines how information from this table is referred to in the admin screen (named for purpose of clarity)
+
+    @author Rowan N
+    """
     uId = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -141,6 +218,22 @@ class SpotRegister(models.Model):
 
 
 class PreviousSpotAttend(models.Model):
+    """This table holds each instance of a spot being the spot of the day 
+
+    Columns:
+        name (_type_): _description_
+        sId (ForeignKey): Holds the spot that is the spot of the day. If the spot it's referencing is deleted, this record is also deleted
+        attendance (PositiveSmallIntegerField): Records how many individuals have attended this spot-instance. Default is 0
+        spotDay (DateField): The actual date this spot is spot of the day. Must be unique (only one spot can be spot of the day)
+
+    Functions:
+        __str__(self): Defines how each record in the table is represented (E.g. 2023-02-26 Rock Garden) (AKA spotDay sId.name)
+    
+    Other:
+        The meta class defines how information from this table is referred to in the admin screen (named for purpose of clarity)
+
+    @author Rowan N
+    """
     sId = models.ForeignKey(
         'Spot',
         on_delete=models.CASCADE,

@@ -1,55 +1,131 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block title %}Leaderboard{% endblock %}
-
+<!--- author Rowan and Benjamin --->
 {% block style %}
     <style>
-    table {
-        border-collapse: collapse;
-        width: 100%;
-    }
-    th {
-        text-align: center;
-        padding: 8px;
-    }
-    td {
-        border: 1px solid black;
-        text-align: left;
-        padding: 8px;
-    }
+        .page_container {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            height: 100vh;
+            margin-top: 20px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 90%;
+            background-color: white;
+            border: 6px solid #285430;
+        }
+        th {
+            text-align: center;
+            padding: 8px;
+        }
+        td {
+            border: 1px solid black;
+            padding: 8px;
+            max-width: 150px;
+            text-overflow:clip;
+            overflow:hidden;
+            text-align: center;
+        }
+        .currentUser {
+            background-color: #b4b4b4;
+            font-style: italic;
+            text-decoration: underline;
+        }
+        #first {
+            background-color: #e8b923;
+            font-weight: bold;
+            font-size: 22px;
+        }
+        #second {
+            background-color: silver;
+            font-weight: bold;
+            font-size: 20px;
+        }
+        #third {
+            background-color: #b8860b;
+            font-weight: bold;
+            font-size: 18px
+        }
     </style>
 {% endblock %}
 
+<!-- Data passed to this file from views.py:
+rankings - 2D list for the top 5 users, in the format [position, record]
+currentUser - The current logged-in user's ID
+noDots - boolean value for whether a dotted record is needed in the leaderboard
+extra - any additional records needed, in the same format as rankings. These are either 6 (if user is 6th),
+    6 and 7 (if user is 7th), or the user and one above and below their position.
+position - the current user's position on the table-->
+
+<!--- block that will add the body content into base.html --->
 {% block content %}
-    {{ UiT }} {{ position }} {{ url }}
-    <table><tr>
-        <th>Rank</th>
-        <th>Username</th>
-        <th>Current Streak</th>
-        <th>Overall Score</th>
-    </tr>
-    <?php $i = 1; ?>
-    {% for record in rankings %}
-        <tr>
-            <td><?php echo $i; ?></td>
-            <td>{{ record.user.username }}</td>
-            <td>{{ record.currentStreak }}</td>
-            <td>{{ record.totalPoints }}</td>
-        </tr>
-        <?php $i += 1; ?>
-    {% endfor %}
-    {% if not UiTS %}
-        <tr>
-        <td>...</td><td>...</td><td>...</td><td>...</td>
-        </tr>
-    {% endif %}
-    {% for record in extra %}
-        <tr>
-        <td>{{ position }}</td>
-        <td>{{ record.user.username }}</td>
-        <td>{{ record.currentStreak }}</td>
-        <td>{{ record.totalPoints }}</td>
-        </tr>
-    {% endfor %}
-    </table>
+    <div class = "page_container">
+    {{ test }}
+        <h2> Leaderboard Type </h2>
+        <div>
+            <input type="radio" id="total" name="ranking_type" value="total">
+            <label for="total">Total</label>
+
+            <input type="radio" id="streak" name="ranking_type" value="streak">
+            <label for="streak">Streak</label>
+        </div>
+        <br>
+        <table>
+            <thead>
+            <tr>
+                <th style="width:10px">Rank</th>
+                <th>Username</th>
+                <th style="width:10px">Spot<br>Streak</th>
+                <th style="width:10px">Total<br>Score</th>
+            </tr>
+            </thead>
+            {% for record in rankings %}
+                <tr 
+                {% if record.0 == 1 %}
+                    id="first"
+                {% elif record.0 == 2 %}
+                    id="second"
+                {% elif record.0 == 3 %}
+                    id="third"
+                {% endif %}
+                {% if record.1.user.pk == currentUser %}
+                    class="currentUser"
+                {% endif %}
+                >
+                <td>{{ record.0 }}</td>
+                <td style="text-align: left;">{{ record.1.user.username }}</td>
+                <td>{{ record.1.currentStreak }}</td>
+                <td>{{ record.1.totalPoints }}</td>
+            </tr>
+            {% endfor %}
+            {% if not noDots %}
+                <tr style="font-weight: bold;">
+                    <td>...</td><td>...</td><td>...</td><td>...</td>
+                </tr>
+            {% endif %}
+            {% for record in extra %}
+                <tr
+                {% if record.0 == 1 %}
+                    id="first"
+                {% elif record.0 == 2 %}
+                    id="second"
+                {% elif record.0 == 3 %}
+                    id="third"
+                {% endif %}
+                {% if record.1.user.pk == currentUser %}
+                    class="currentUser"
+                {% endif %}
+                >
+                    <td>{{ record.0 }}</td>
+                    <td style="text-align:left;">{{ record.1.user.username }}</td>
+                    <td>{{ record.1.currentStreak }}</td>
+                    <td>{{ record.1.totalPoints }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
 {% endblock %}

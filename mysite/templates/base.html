@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en" style="background: #e1e0b8;">
 
+<!--- author Benjamin--->
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-    <title>Untitled</title>
+    <title>Spot of The Day</title>
 
   {% load static %}
     <link rel="stylesheet" href="{% static 'bootstrap.min.css' %}">
@@ -16,8 +17,14 @@
 
     </style>
     {% block style %}{% endblock %}
+    <script>
+
+
+    </script>
+    {% block script %}{% endblock %}
 </head>
 
+<!--- Creates the navbar at the top the page --->
 <body class="align-items-center" style="background: rgb(225,224,184);">
     <nav class="navbar navbar-light navbar-expand-md py-3">
         <div class="container"><a class="navbar-brand d-flex align-items-center" href="/"><span class="bs-icon-sm bs-icon-rounded bs-icon-primary d-flex justify-content-center align-items-center me-2 bs-icon" style="background: #9f8772;"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-tree">
@@ -25,18 +32,22 @@
                     </svg></span><span class="fw-light" style="font-family: Alatsi, sans-serif;color: var(--bs-light);padding-right: 10px;">Spot of The Day</span></a><button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-2"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
             <div class="collapse navbar-collapse" id="navcol-2">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link active" href="/">Home</a></li>
                     {% if user.is_authenticated %}
-                        <li class="nav-item"><a class="nav-link" href="/signup">Leader board</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/login">Profile</a></li>
+                        <li class="nav-item"><a class="nav-link active" href="/">Home</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/leaderboard?q=streak">Leaderboard</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/profile">Profile</a></li>
                         <li class="nav-item"><a class="nav-link" href="/logout">Sign Out</a></li>
+                    {% else %}
+                        <li class="nav-item"><a class="nav-link" href="/login">Log In</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/signup">Register</a></li>
                     {% endif %}
+                </ul>
             </div>
         </div>
     </nav>
     <script src="{% static 'bootstrap.min.js' %}"></script>
 
-
+    <!--- creates a block where all other pages can put their content --->
     {% block content %}
 
     {% endblock %}

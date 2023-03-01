@@ -1,0 +1,83 @@
+
+{% extends 'base.html' %}
+
+{% load static %}
+{% block title %}Profile{% endblock %}
+
+<!-- author Sam and Benjamin -->
+{% block style %}
+  <style>
+    .page-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+
+      .userContainer {
+        height: 70%;
+        width: 60%;
+        transform: translate(0%, -10%);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .userName {
+        font-weight: bold;
+        font-size: 20px;
+      }
+
+      .userContent {
+        width: 100%;
+        height: 60%;
+        transform: translate(0%, 34%);
+
+        margin-top: 20px;
+        text-align: center;
+        font-size: 16px;
+      }
+
+      .circle {
+        position: absolute;
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        background-color: #665A48;
+        background-size: cover;
+        transform: translate(0%, -100%);
+      }
+
+      .circle img {
+        border-radius: 50%;
+        width: 95%;
+        height: 95%
+      }
+    </style>
+{% endblock style %}
+
+
+<!--- block that will add the body content into base.html --->
+{% block content %}
+  <div class="page-container">
+    <div class = "userContainer">
+      <div class = "circle">
+        <img src="{{profileImage}}">
+      </div>
+
+      <div class = "userContent"> 
+        <p class="userName"> Username: {{user.username}} </p>
+        Streak: {{ streak }} <br>
+        Email: {{ user.email }} <br>
+      </div>
+
+
+    </div>
+  </div>
+{% endblock content %}
+

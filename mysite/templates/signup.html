@@ -1,12 +1,13 @@
 {% extends "base.html" %}
+<!-- author Samual -->
 
+<!-- block that will add the body content into base.html --->
 {% block content %}
-
 {% load crispy_forms_tags %}
 
 <!--Register-->
 <div class="container py-5">
-	<h1>SignUp</h1>
+	<h1>Sign Up</h1>
 	<form method="POST">
 		{% csrf_token %}
 		{{ register_form|crispy }}
