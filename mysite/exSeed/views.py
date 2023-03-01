@@ -168,20 +168,21 @@ def home_page(request):
 def leaderboard(request):
     """This view facilitates the display of the leaderboard at exseed.duckdns.org/leaderboard
 
-    Args:
-        request (HTML_REQUEST): The Django-supplied web request that contains information about the current request to see this view
+    Args: request (HTML_REQUEST): The Django-supplied web request that contains information about the current request
+    to see this view
 
     Returns:
-        PAGE_REDIRECT: If certain criteria are not met (user is logged in, user is on mobile device), the view returns a redirect to the
-        appropriate page to handle this
+        PAGE_REDIRECT: If certain criteria are not met (user is logged in, user is on mobile device), the view returns a
+            redirect to the appropriate page to handle this
         Non-erroneous return: (request, 'leaderboard.html', page_contents)
         request (HTML_REQUEST): Passes on request data to the webpage
         'leaderboard.html' (str): The string name of the desired html doc the page_contents should be displayed on
         page_contents (library): A library of information to be displayed on the leaderboard webpage
             rank_and_rec ([int, Query]): Contains users rank and corresponding database record
             user (int): The current user's primary key value (UserID)
-            no_dots (bool): Defines whether a leaderboard will require a dots line (for when the user is significantly below the top)
-            additional_rankings ([int, Query]): A 2D array containing additional data (for when the user is below the top 5)
+            no_dots (bool): Defines whether a leaderboard will require a dots line (for when the user is significantly
+                below the top)
+            additional_rankings ([int, Query]): A 2D array containing additional data (for when the user is below top 5)
             user_position (int): The current user's position within the leaderboard
     """
     # Checks if the user is on a desktop instead of mobile and if
@@ -207,18 +208,19 @@ def leaderboard(request):
         sort_column = "-totalPoints"
         other = "-currentStreak"
     else:
-        return redirect('/leaderboard?q=streak')  # If this is reached, the url includes a value not recognised, and as such
-                                                  # has redirected to a valid url value (the streak leaderboard)
+        return redirect('/leaderboard?q=streak')  # If this is reached, the url includes a value not recognised, and as
+        # such has redirected to a valid url value (the streak leaderboard)
 
     # This block contains all required data to process, refine and display leaderboard data
     user = request.user.pk  # Gets the current users user id
     top_rankings = UserInfo.objects.order_by(sort_column, other)[:5]  # Top 5 users
     user_in_top_five = False  # If user is in top five, only top five should be shown
     user_in_top_seven = False  # If the user is in the top seven, then there needn't be a '...' and then their position
-    user_position = None  # Keeps track of current user's position on the table. This is NOT the user's rank on said table
+    user_position = None  # Keeps track of current user's position on the table. This is NOT the user rank on the table
     position = 1  # Keeps track of current records rank
     prev_position_score = None  # Keeps track of the previous record's score for sake of repeated positions
-    prev_prev_position_score = None  # Required for when user is below the top 7 (to accurately judge the record above the user)
+    prev_prev_position_score = None  # Required for when user is below the top 7 (to accurately judge the record
+    # above the user)
     column_name = sort_column[1:]  # Removes '-' from column name so that it can be used in conjunction with getattr()
     buffer = 1  # Handles repeated positions
     rank_and_rec = []  # Lines up record with their position(aka rank) on the leaderboard
@@ -236,7 +238,8 @@ def leaderboard(request):
 
     # Elif the user is within the top 7, gather only their record and any above (so if 6, get only 6)
     if not user_in_top_five:
-        six_and_seven = UserInfo.objects.order_by(sort_column, other)[5:7]  # The database records for users in positions 6 and 7
+        six_and_seven = UserInfo.objects.order_by(sort_column, other)[5:7]  # The database records for users in
+        # positions 6 and 7
         for record in six_and_seven:
             position, buffer = position_buffer_calc(position, buffer, record, column_name, prev_position_score)
             RaR = [position, record]
@@ -251,28 +254,31 @@ def leaderboard(request):
     if not user_in_top_seven and not user_in_top_five:
         additional_rankings = []  # Clears any additional data recorded during six_and_seven analysis
         remainder = UserInfo.objects.order_by(sort_column, other)[7:]  # The rest of the database to search through
-        prev_buf = None  # Keeps track of the previous buffer (used when reverting to a previous state once user is found)
+        prev_buf = None  # Keeps track of the previous buffer (used when reverting to a previous state once user found)
         for record in remainder:
-            if user == record.user.pk:  # User has been found. Record their place in the table to get records above and below
+            if user == record.user.pk:  # User has been found. Record their place in the table to get neighbour records
                 user_position = position + buffer
                 break
             prev_buf = buffer
             position, buffer = position_buffer_calc(position, buffer, record, column_name, prev_position_score)
             prev_prev_position_score = prev_position_score
-            prev_position_score = getattr(record, column_name)  # Saves the score of the record two iterations ago (used when reverting to previous state once user found)
+            prev_position_score = getattr(record, column_name)  # Saves the score of the record two iterations ago (
+            # used when reverting to previous state once user found)
 
         # By this point, if user_position doesn't exist, the user is NOT in the UserInfo table!!!
-        if user_position is not None:  # This avoids errors if the user doesn't have a UserInfo entry (WHICH SHOULDN'T BE EXPERIENCED)
+        if user_position is not None:  # This avoids errors if the user doesn't have a UserInfo entry (WHICH
+            # SHOULD NEVER BE EXPERIENCED IF SIGNUP IMPLEMENTED AS REQUESTED)
             adjacent = UserInfo.objects.order_by(sort_column, other)[user_position-2:user_position+1]
-            # Since we have found the user, we are now going BACK a step to evaluate the rank above the user. As such we need to revert the
-            # position/buffer state to how it was when evaluating the record above the user
+            # Since we have found the user, we are now going BACK a step to evaluate the rank above the user. As such
+            # we need to revert the position/buffer state to how it was when evaluating the record above the user
             if prev_buf is None:  # This means the user is in eighth place, and thus no action need be taken
                 pass
-            elif buffer == 1:  # This means the previous action did NOT increment the buffer (previous position/buffer state needed)
+            elif buffer == 1:  # This means the previous action did NOT increment the buffer (previous
+                # position/buffer state needed)
                 buffer = prev_buf
                 position -= buffer
-            else:  # If the buffer isn't 1, then the previous pos_buf_calc's action was to increment the buffer, and as such we can simply revert
-                   # this action to go back to the previous position/buffer state
+            else:  # If the buffer isn't 1, then the previous pos_buf_calc's action was to increment the buffer,
+                # and as such we can simply revert this action to go back to the previous position/buffer state
                 buffer -= 1
             counter = -1  # Counts which record we are looking at (-1 is above user, 0 is user, 1 is below user)
             for record in adjacent:
@@ -280,7 +286,8 @@ def leaderboard(request):
                     position, buffer = position_buffer_calc(position, buffer, record, column_name,
                                                             prev_prev_position_score)  # Re-evaluates record above user
                 elif counter == 0 or counter == 1:
-                    position, buffer = position_buffer_calc(position, buffer, record, column_name, prev_position_score)  # Evaluates user and one below
+                    position, buffer = position_buffer_calc(position, buffer, record, column_name, prev_position_score)
+                    # Evaluates user and one below
                 prev_position_score = getattr(record, column_name)
                 RaR = [position, record]  # Rank and record saved in correct format
                 additional_rankings.append(RaR)  # Rank and record appended to 2D array
