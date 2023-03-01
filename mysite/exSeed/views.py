@@ -164,6 +164,7 @@ def home_page(request):
 
     return render(request, 'home.html', pageContent)
 
+
 def leaderboard(request):
     """This view facilitates the display of the leaderboard at exseed.duckdns.org/leaderboard
 
@@ -305,14 +306,13 @@ def profile_page(request):
     if not request.user.is_authenticated:
         return redirect('/login')
 
+    user = request.user.pk
+    userinfo = UserInfo.objects.filter(user_id=user).values()
+    streak = userinfo[0]['currentStreak']
     content = {
-        "username" : "",
-        "streak": "",
-        "email": "",
+        "streak": streak,
         "profileImage": "https://i.imgur.com/QP8EIWK.png"
     }
-
-
     return render(request, 'profile.html', content)
 
 def test(request):
