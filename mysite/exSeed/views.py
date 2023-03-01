@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 
 from .forms import SignupForm
-from .models import Spot, UserInfo, PreviousSpotAttend
+from .models import Spot, UserInfo, PreviousSpotAttend, Avatar
 import random
 
 from user_agents import parse
@@ -38,8 +38,17 @@ def position_buffer_calc(position, buffer, record, column_name, prev_pos_score):
         new_buf = 1 
     return new_pos, new_buf  # Gives the new position and buffer values back to the main code
 
+
 # Create your views here.
 def signup(request):
+    """
+    View for '/signup': Registers a user in the django.contrib.auth user table
+    :param request:
+            The Django-supplied web request that contains information about the current request to see this view
+    :return render()
+            Redirects the user to '/' where they will be able to see the spot of the day
+    @author: Sam Tebbet, Benjamin Pickup
+    """
     # Checks if the user is on a desktop instead of mobile and if
     # so renders the QR code page
     user_agent = parse(request.META['HTTP_USER_AGENT'])
@@ -54,10 +63,29 @@ def signup(request):
         form = SignupForm(request.POST)
         if form.is_valid():
             form.save()
-            username = form.cleaned_data.get('username')
-            email = form.cleaned_data.get('email')
+            account_username = form.cleaned_data.get('username')
+            account_email = form.cleaned_data.get('email')
             raw_password = form.cleaned_data.get('password1')
-            user = authenticate(username=username, password=raw_password)
+
+            # Create a record in additional user info as long as their isn't already a record then
+            try:
+                user_account = User.objects.get(username = account_username)
+                # Fills the userInfo record with default data
+                userinfo = UserInfo.objects.create(
+                    user=user_account,
+                    avatarId=Avatar.objects.get(pk=1), # gets the default avatar
+                    title='Sapling',
+                    totalPoints=0,
+                    currentStreak=0,
+                    group=UserInfo.GREEN,  # Replace with the desired group (e.g. UserInfo.BLUE)
+                )
+                # Saves the record into the table
+                userinfo.save()
+            except:
+                #Here a fail would only a occur if there was that user was already in UserInfo
+                pass
+
+            user = authenticate(username=account_username, password=raw_password)
             login(request, user)
             return redirect('home')
     else:
@@ -66,6 +94,14 @@ def signup(request):
 
 
 def login_request(request):
+    """
+    View for '/login': Logs a user in to the website if they have an account
+    :param request:
+            The Django-supplied web request that contains information about the current request to see this view
+    :return render()
+            Redirects the user to '/' where they will be able to see the spot of the day
+    @author: Sam Tebbet
+    """
     # Checks if the user is on a desktop instead of mobile and if
     # so renders the QR code page
     user_agent = parse(request.META['HTTP_USER_AGENT'])
@@ -94,12 +130,30 @@ def login_request(request):
 
 
 def logout_request(request):
+    """
+    View for '/logout': Logs the user out of the website
+    :param request:
+            The Django-supplied web request that contains information about the current request to see this view
+    :return render()
+            Redirects the user to '/' where they will be able to see the spot of the day
+    @author: Sam Tebbet
+    """
     logout(request)
     messages.info(request, "You have successfully logged out")
     return redirect('home')
 
 
 def delete_request(request, username):
+    """
+    View for '/delete/<username>': Registers a user in the django.contrib.auth user table
+    :param request:
+            The Django-supplied web request that contains information about the current request to see this view
+    :param username:
+            Username of the user deleting their account
+    :return render()
+            Redirects the user to '/' where they will be able to see the spot of the day
+    @author: Sam Tebbet
+    """
     try:
         user = User.objects.get(username=username)
         user.delete()
@@ -109,23 +163,22 @@ def delete_request(request, username):
 
 
 def home_page(request):
-    """This view facilitates the display of the profile page at exseed.duckdns.org/
-        Args:
-        request (HTML_REQUEST): The Django-supplied web request that contains information about the current request to see this view
-
-    Returns:
+    """
+    This view facilitates the display of the profile page at exseed.duckdns.org/
+    param: request (HTML_REQUEST): The Django-supplied web request that contains information about the current request to see this view
+    returns:
         PAGE_REDIRECT: If certain criteria are not met (user is logged in, user is on mobile device), the view returns a redirect to the
         appropriate page to handle this
         Non-erroneous return: (request, 'profile.html', page_contents)
         request (HTML_REQUEST): Passes on request data to the webpage
-        'profile.html' (str): The string name of the desired html doc the page_contents should be displayed on.
+        'home.html' (str): The string name of the desired html doc the page_contents should be displayed on.
         page_contents (library): A library of information to be displayed on the profile webpage.
             image (str) : The url for the current spot of the day.
             description (str) : The description for the current spot of the day.
             latitude (int) : The latitude coordinate of the current spot of the day.
             longitude (int) : The longitude coordinate of the current spot of the day.
 
-    @author: Benjamin & Samual
+    @author: Benjamin & Sam Tebbet
     """
     # Checks if the user is on a desktop instead of mobile and if
     # so renders the QR code page
@@ -197,6 +250,8 @@ def leaderboard(request):
                 below the top)
             additional_rankings ([int, Query]): A 2D array containing additional data (for when the user is below top 5)
             user_position (int): The current user's position within the leaderboard
+
+    @author: Rowan N
     """
     # Checks if the user is on a desktop instead of mobile and if
     # so renders the QR code page
@@ -327,9 +382,10 @@ def profile_page(request):
         'profile.html' (str): The string name of the desired html doc the page_contents should be displayed on
         page_contents (library): A library of information to be displayed on the profile webpage
             streak (int) : The users current streak to be put into the html template
+            title (str) : The users title
             profileImage (str) : The profile picture of the user to be displayed
 
-    @author: Benjamin & Samual
+    @author: Benjamin & Sam Tebbet
     """
 
     # Checks if the user is on a desktop instead of mobile and if
@@ -347,9 +403,10 @@ def profile_page(request):
     user = request.user.pk
     user_info = UserInfo.objects.filter(user_id=user).values()
     streak = user_info[0]['currentStreak']
-
+    title = user_info[0]['title']
     page_contents = {
         "streak": streak,
+        "title": title,
         "profileImage": "https://i.imgur.com/QP8EIWK.png"
     }
     return render(request, 'profile.html', page_contents)

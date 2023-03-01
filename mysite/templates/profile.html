@@ -4,7 +4,7 @@
 {% load static %}
 {% block title %}Profile{% endblock %}
 
-<!-- author Sam and Benjamin -->
+<!-- author Sam Tebbet and Benjamin -->
 {% block style %}
   <style>
     .page-container {
@@ -61,6 +61,11 @@
     </style>
 {% endblock style %}
 
+<!-- Data passed to this file from views.py:
+streak: The users' current streak
+title: The users' title
+profileImage: The users' profile image, defaulted to the alien
+-->
 
 <!--- block that will add the body content into base.html --->
 {% block content %}
@@ -73,6 +78,7 @@
       <div class = "userContent"> 
         <p class="userName"> Username: {{user.username}} </p>
         Streak: {{ streak }} <br>
+        Title: {{ title }} <br>
         Email: {{ user.email }} <br>
       </div>
 
