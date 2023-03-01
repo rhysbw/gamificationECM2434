@@ -1,8 +1,9 @@
 from django.urls import path, include
-from django.views.generic.base import TemplateView
 from . import views
 
-
+"""
+List of the urls in the website and linking them to their views
+"""
 urlpatterns = [
     path("login/", views.login_request, name="login"),
     path("signup", views.signup, name="signup"),
