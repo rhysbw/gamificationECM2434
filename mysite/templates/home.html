@@ -2,6 +2,8 @@
 {% load static %}
 {% block title %}Home{% endblock %}
 
+
+<!-- author Benjamin --->
 {% block style %}
   <style>
     .page_container {
@@ -84,10 +86,6 @@
         color: grey;
     }
 
-    
-
-
-
   </style>
 {% endblock style %}
 
@@ -145,17 +143,14 @@
           break;
       }
     }
+
     getLocation();
 
-
-
-
 </script>
-
 {% endblock script %}
 
+<!--- block that will add the body content into base.html --->
 {% block content %}
-
 <div class = "page_container">
   <div class = "image_container">
     <img src="{{ file_path }}" class="image">
@@ -177,7 +172,4 @@
   </div>
 
 </div>
-
-
-
 {% endblock %}

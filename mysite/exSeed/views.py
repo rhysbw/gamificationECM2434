@@ -3,12 +3,11 @@ from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from django.core.exceptions import ObjectDoesNotExist
 
 from .forms import SignupForm
 from .models import Spot, UserInfo, PreviousSpotAttend
 import random
-import re
+
 from user_agents import parse
 import datetime
 
@@ -110,6 +109,24 @@ def delete_request(request, username):
 
 
 def home_page(request):
+    """This view facilitates the display of the profile page at exseed.duckdns.org/
+        Args:
+        request (HTML_REQUEST): The Django-supplied web request that contains information about the current request to see this view
+
+    Returns:
+        PAGE_REDIRECT: If certain criteria are not met (user is logged in, user is on mobile device), the view returns a redirect to the
+        appropriate page to handle this
+        Non-erroneous return: (request, 'profile.html', page_contents)
+        request (HTML_REQUEST): Passes on request data to the webpage
+        'profile.html' (str): The string name of the desired html doc the page_contents should be displayed on.
+        page_contents (library): A library of information to be displayed on the profile webpage.
+            image (str) : The url for the current spot of the day.
+            description (str) : The description for the current spot of the day.
+            latitude (int) : The latitude coordinate of the current spot of the day.
+            longitude (int) : The longitude coordinate of the current spot of the day.
+
+    @author: Benjamin & Samual
+    """
     # Checks if the user is on a desktop instead of mobile and if
     # so renders the QR code page
     user_agent = parse(request.META['HTTP_USER_AGENT'])
@@ -121,33 +138,30 @@ def home_page(request):
     if not request.user.is_authenticated:
         return redirect('/login')
 
-    #Find todays spot
+    #Find the date of today
     today = datetime.date.today()
 
     #Checks if there is a spot for today and if not a new one will be assigned
     try:
         spot = PreviousSpotAttend.objects.filter(spotDay=today).first().sId
-        print(spot)
-        print("spot was already assigned")
     except:
-        print("spot was not assigned")
         yesterday = today - datetime.timedelta(days=1)
+        # Continously keeps checking for a new spot until it finds one that is not the same as yesterdays
         while True:
             # pick a random spot
             spot = random.choice(Spot.objects.all())
             # check if that is the same as yesterday and if so get a new one
             try:
-                print("here")
                 if spot.id != PreviousSpotAttend.objects.filter(spotDay=yesterday)[0].sId:
                     False
             except:
                 break
+        # Assigns the new spot of the day as the new chosen one
         PreviousSpotAttend(sId=spot, attendance=0, spotDay=today).save()
-        print("spot of the day assigned")
 
 
 
-    #Assigns the values of todays spot so they can be rendered into the website
+    #Assigns the values of today's spot so they can be rendered into the website
     spot_name = spot.name
     image = spot.imageName
     description = spot.desc
@@ -155,14 +169,13 @@ def home_page(request):
     longitude = spot.longitude
 
 
-    pageContent = {'file_path' : image,
+    page_contents = {'file_path' : image,
                    'spot_name' : spot_name,
                    'spot_description': description,
                    'spot_latitude': latitude,
                    'spot_longitude': longitude}
 
-
-    return render(request, 'home.html', pageContent)
+    return render(request, 'home.html', page_contents)
 
 
 def leaderboard(request):
@@ -295,6 +308,23 @@ def leaderboard(request):
     return render(request, 'leaderboard.html', pageContent)
 
 def profile_page(request):
+    """This view facilitates the display of the leaderboard at exseed.duckdns.org/profile
+    Args:
+        request (HTML_REQUEST): The Django-supplied web request that contains information about the current request to see this view
+
+    Returns:
+        PAGE_REDIRECT: If certain criteria are not met (user is logged in, user is on mobile device), the view returns a redirect to the
+        appropriate page to handle this
+        Non-erroneous return: (request, 'profile.html', page_contents)
+        request (HTML_REQUEST): Passes on request data to the webpage
+        'profile.html' (str): The string name of the desired html doc the page_contents should be displayed on
+        page_contents (library): A library of information to be displayed on the profile webpage
+            streak (int) : The users current streak to be put into the html template
+            profileImage (str) : The profile picture of the user to be displayed
+
+    @author: Benjamin & Samual
+    """
+
     # Checks if the user is on a desktop instead of mobile and if
     # so renders the QR code page
     user_agent = parse(request.META['HTTP_USER_AGENT'])
@@ -306,18 +336,14 @@ def profile_page(request):
     if not request.user.is_authenticated:
         return redirect('/login')
 
+    # Takes the users information from the user and UserInfo table to be assigned to the page_contents variables.
     user = request.user.pk
-    userinfo = UserInfo.objects.filter(user_id=user).values()
-    streak = userinfo[0]['currentStreak']
-    content = {
+    user_info = UserInfo.objects.filter(user_id=user).values()
+    streak = user_info[0]['currentStreak']
+
+    page_contents = {
         "streak": streak,
         "profileImage": "https://i.imgur.com/QP8EIWK.png"
     }
-    return render(request, 'profile.html', content)
+    return render(request, 'profile.html', page_contents)
 
-def test(request):
-
-    content = {'lat': 50.724864,
-               'long': -3.5127296
-               }
-    return render(request, 'testPage.html', content)
