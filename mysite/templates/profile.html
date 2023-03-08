@@ -1,34 +1,41 @@
-
 {% extends 'base.html' %}
 
 {% load static %}
 {% block title %}Profile{% endblock %}
 
+<!-- Data passed to this file from views.py:
+streak: The users' current streak
+title: The users' title
+profileImage: The users' profile image, defaulted to the alien
+avatars: List of all the avatar images
+number_of_avatars: The length of the avatars list
+-->
+
 <!-- author Sam Tebbet and Benjamin -->
 {% block style %}
-  <style>
+<style>
     .page-container {
         display: flex;
         justify-content: center;
         align-items: center;
         height: 100vh;
-      }
+    }
 
-      .userContainer {
+    .userContainer {
         height: 70%;
         width: 60%;
         transform: translate(0%, -10%);
         display: flex;
         justify-content: center;
         align-items: center;
-      }
+    }
 
-      .userName {
+    .userName {
         font-weight: bold;
         font-size: 20px;
-      }
+    }
 
-      .userContent {
+    .userContent {
         width: 100%;
         height: 60%;
         transform: translate(0%, 34%);
@@ -36,9 +43,9 @@
         margin-top: 20px;
         text-align: center;
         font-size: 16px;
-      }
+    }
 
-      .circle {
+    .circle {
         position: absolute;
         width: 150px;
         height: 150px;
@@ -51,39 +58,114 @@
         background-color: #665A48;
         background-size: cover;
         transform: translate(0%, -100%);
-      }
+    }
 
-      .circle img {
+    .small-circle {
+        position: absolute;
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    img {
         border-radius: 50%;
         width: 95%;
         height: 95%
-      }
-    </style>
+    }
+
+    .circle img {
+        border-radius: 50%;
+        width: 95%;
+        height: 95%
+    }
+
+    .card {
+            width: 20rem;
+            margin: 2rem;
+        }
+
+    .image-grid-container {
+        display: grid;
+        grid-template-columns: auto auto auto;
+    }
+
+    .modal-dialog{
+       width: 96.5%;
+       height: 100%;
+        top: 25%;
+    }
+    /* HIDE RADIO */
+    [type=radio] {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    /* IMAGE STYLES */
+    [type=radio] + img {
+      cursor: pointer;
+    }
+
+    /* CHECKED STYLES */
+    [type=radio]:checked + img {
+      outline: 2px solid black;
+    }
+
+</style>
 {% endblock style %}
 
-<!-- Data passed to this file from views.py:
-streak: The users' current streak
-title: The users' title
-profileImage: The users' profile image, defaulted to the alien
--->
+{% block script %}
 
+{% endblock script %}
 <!--- block that will add the body content into base.html --->
 {% block content %}
-  <div class="page-container">
-    <div class = "userContainer">
-      <div class = "circle">
-        <img src="{{profileImage}}">
-      </div>
-
-      <div class = "userContent"> 
-        <p class="userName"> Username: {{user.username}} </p>
-        Streak: {{ streak }} <br>
-        Title: {{ title }} <br>
-        Email: {{ user.email }} <br>
-      </div>
+<div class="page-container">
+    <div class="userContainer">
+         <div class="circle" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+             <img src="{{ profileImage }}" alt="Click to change profile picture">
+         </div>
+        <div class="userContent">
+            <p class="userName"> Username: {{user.username}} </p>
+            Streak: {{ streak }} <br>
+            Title: {{ title }} <br>
+            Email: {{ user.email }} <br>
+        </div>
 
 
     </div>
+</div>
+
+
+<!--- modal is a lightbox popup
+    Check how iterating though the arrays variable works
+    See if you can get the image to load on screen--->'
+<div class="modal fade" id="editProfileModal" tabindex="1" role="dialog" aria-hidden="true" >
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-body">
+          <div class="container">
+              <form action="/change_profile_picture" method="post">
+              <div class="image-grid-container">
+                  {% for avatar in avatars %}
+                        <label>
+                          <input type="radio" name="chosen_pfp" value="{{ avatar.0 }}">
+                          <img src="{{ avatar.0 }}}">
+                        </label>
+                  {% endfor %}
+              </div>
+                  <button type="button" class="btn btn-warning" data-bs-dismiss="modal">Close</button>
+                  {% csrf_token %}
+            <button type="submit" class="btn btn-success">Save changes</button>
+            </form>
+          </div>
+      </div>
+    </div>
   </div>
+</div>
 {% endblock content %}
+
+
 
