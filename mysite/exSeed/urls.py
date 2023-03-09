@@ -13,4 +13,5 @@ urlpatterns = [
     path("leaderboard", views.leaderboard, name="leaderboard"),  # Refers to the leaderboard view when
     # exseed.duckdns.org/leaderboard is received
     path("profile", views.profile_page, name ="profile"),
+    path("compass", views.compass, name="compass")
 ]
