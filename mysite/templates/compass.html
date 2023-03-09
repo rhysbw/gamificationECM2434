@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Compass{% endblock %}
+<!--- author Rhys--->
+{% block style %}
+    <style>
+        .page_container {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            height: 100vh;
+            margin-top: 20px;
+        }
+
+        .compass {
+            position: relative;
+            width: 320px;
+            height: 320px;
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            margin: auto;
+        }
+
+        .compass > .arrow {
+            position: absolute;
+            width: 0;
+            height: 0;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-style: solid;
+            border-width: 30px 20px 0 20px;
+            border-color: red transparent transparent transparent;
+            z-index: 1;
+        }
+
+        .compass > .compass-circle,
+        .compass > .my-point {
+            position: absolute;
+            width: 80%;
+            height: 80%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: transform 0.1s ease-out;
+            background: url(https://cdn.onlinewebfonts.com/svg/img_467023.png) center no-repeat;
+            background-size: contain;
+        }
+
+        .compass > .my-point {
+            opacity: 0;
+            width: 20%;
+            height: 20%;
+            background: rgb(8, 223, 69);
+            border-radius: 50%;
+            transition: opacity 0.5s ease-out;
+        }
+
+        .line {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 7px;
+            height: 50%;
+            background-color: #0800ff;
+            opacity: 0.5;
+            z-index: 1;
+        }
+
+        .start-btn {
+            margin-bottom: auto;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="page_container">
+        <div class="compass" id="compass">
+            <div class="arrow" id="arrow"></div>
+            <div class="line" id="line"></div>
+            <div class="my-point" id="my-point"></div>
+        </div>
+        <!-- TODO: remove -->
+        <button class="start-btn" onclick="init()">start</button>
+        <p id="testing"></p>
+    </div>
+{% endblock content %}
+{% block script %}
+    <script>
+        // Needing extra permissions as of IOS
+        const isIOS =
+            navigator.userAgent.match(/(iPod|iPhone|iPad)/) &&
+            navigator.userAgent.match(/AppleWebKit/);
+
+        /**
+         * Starting page, gets permissions for non IOS also
+         */
+        function init() {
+            navigator.geolocation.watchPosition(locationHandler);
+            startCompass();
+            if (!isIOS) {
+                window.addEventListener("deviceorientationabsolute", handler, true);
+            }
+        }
+
+        /**
+         * Starting compass, gets permissions for IOS
+         */
+        function startCompass() {
+            if (isIOS) {
+                DeviceOrientationEvent.requestPermission()
+                    .then((response) => {
+                        if (response === "granted") {
+                            window.addEventListener("deviceorientation", handler, true);
+                        } else {
+                            alert("has to be allowed!");
+                        }
+                    })
+                    .catch(() => alert("not supported"));
+            }
+        }
+
+        /**
+         * Handles the compass movement and heading detection
+         * @param {WindowEventMap[keyof WindowEventMap]} e Direction heading of Phone
+         */
+        function handler(e) {
+            // angle of phone
+            const compass = e.webkitCompassHeading || Math.abs(e.alpha - 360);
+
+            // Rotates line to always face spot
+            document.getElementById("line").style.transform = `translate(-50%, -100%) rotate(${-compass + pointDegree}deg)`;
+            // ±15 degree
+            // Sets middle point to visible or not
+            if (
+                (pointDegree < Math.abs(compass) &&
+                    pointDegree + 15 > Math.abs(compass)) ||
+                pointDegree > Math.abs(compass + 15) ||
+                pointDegree < Math.abs(compass)
+            ) {
+                // User isnt looking towards the spot
+                document.getElementById("my-point").style.opacity = 0;
+            } else if (pointDegree) {
+                // User is currently facing the spot
+                document.getElementById("my-point").style.opacity = 1;
+            }
+        }
+
+        /**
+         * Gets distance from user to spot
+         *
+         * @param {number} userLat
+         * @param {number} userLong
+         * @param {number} targetLat
+         * @param {number} targetLng
+         */
+        function distance(userLat, userLong, targetLat, targetLng) {
+            const R = 6371000; // Earth's radius in meters
+            const lat1 = userLat; // current latitude of user
+            const lng1 = userLong; // current longitude of user
+            const lat2 = targetLat;
+            const lng2 = targetLng;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLng = (lng2 - lng1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLng / 2) * Math.sin(dLng / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            const distance = R * c;
+            return Math.round(distance);
+        }
+
+        let pointDegree;
+
+        /**
+         * Gets the GPS location of the user
+         * @param {GeolocationPosition} position
+         */
+        function locationHandler(position) {
+            const {latitude, longitude} = position.coords; // user location
+            pointDegree = calcDegreeToPoint(latitude, longitude);
+            dist = distance(latitude, longitude, {{ spot_lat }}, {{ spot_long }});
+            document.getElementById("testing").innerHTML = dist + 'm'; // shows distance to spot
+            if (pointDegree < 0) {
+                pointDegree = pointDegree + 360;
+            }
+        }
+
+        /**
+         * Calculates the degrees to a spot
+         * @param {number} latitude
+         * @param {number} longitude
+         * @return {number} heading to point
+         */
+        function calcDegreeToPoint(latitude, longitude) {
+            // location of spot
+            const point = {
+                lat: {{ spot_lat }},
+                lng: {{ spot_long }}
+            };
+            // calculations maths
+            const phiK = (point.lat * Math.PI) / 180.0;
+            const lambdaK = (point.lng * Math.PI) / 180.0;
+            const phi = (latitude * Math.PI) / 180.0;
+            const lambda = (longitude * Math.PI) / 180.0;
+            const psi =
+                (180.0 / Math.PI) *
+                Math.atan2(
+                    Math.sin(lambdaK - lambda),
+                    Math.cos(phi) * Math.tan(phiK) -
+                    Math.sin(phi) * Math.cos(lambdaK - lambda)
+                );
+            return Math.round(psi);
+        }
+
+    </script>
+{% endblock script %}
+

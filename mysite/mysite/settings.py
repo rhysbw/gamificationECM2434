@@ -33,8 +33,8 @@ ALLOWED_HOSTS = ["exseed.duckdns.org",
                  '192.168.0.31',  # Ben IP
                  '10.229.79.209',  # Sam IP
                  'localhost',
-                 '10.0.1.44'
-                 '172.16.15.15'  # Rowan
+                 '10.0.1.12',
+                 '172.16.15.15',  # Rowan
                  '172.16.12.1'  # Rowan (not sure which is correct but added both to be safe)
                  ]
 
@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_extensions',
     'crispy_forms',
     'crispy_bootstrap5'
 ]

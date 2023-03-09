@@ -3,8 +3,9 @@ from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.decorators import login_required
 
-from .forms import SignupForm
+from .forms import SignupForm, ProfilePictureForm
 from .models import Spot, UserInfo, PreviousSpotAttend, Avatar
 import random
 
@@ -35,7 +36,7 @@ def position_buffer_calc(position, buffer, record, column_name, prev_pos_score):
         new_buf += 1  # The buffer increments to make up for the skipped position
     else:  # The values are NOT equal, and as such the rank must increase
         new_pos += buffer
-        new_buf = 1 
+        new_buf = 1
     return new_pos, new_buf  # Gives the new position and buffer values back to the main code
 
 
@@ -55,7 +56,7 @@ def signup(request):
     if not user_agent.is_mobile:
         return render(request, 'QRCodePage.html')
 
-    #Checks if user is logged in and if they are the user sent back to the home page
+    # Checks if user is logged in and if they are the user sent back to the home page
     if request.user.is_authenticated:
         return redirect('/')
 
@@ -146,7 +147,7 @@ def delete_request(request, username):
             The Django-supplied web request that contains information about the current request to see this view
     :param username:
             Username of the user deleting their account
-    :return render()
+    :return redirect()
             Redirects the user to '/' where they will be able to see the spot of the day
     @author: Sam Tebbet
     """
@@ -187,10 +188,10 @@ def home_page(request):
     if not request.user.is_authenticated:
         return redirect('/login')
 
-    #Find the date of today
+    # Find the date of today
     today = datetime.date.today()
 
-    #Checks if there is a spot for today and if not a new one will be assigned
+    # Checks if there is a spot for today and if not a new one will be assigned
     try:
         spot = PreviousSpotAttend.objects.filter(spotDay=today).first().sId
     except:
@@ -208,21 +209,18 @@ def home_page(request):
         # Assigns the new spot of the day as the new chosen one
         PreviousSpotAttend(sId=spot, attendance=0, spotDay=today).save()
 
-
-
-    #Assigns the values of today's spot so they can be rendered into the website
+    # Assigns the values of today's spot so they can be rendered into the website
     spot_name = spot.name
     image = spot.imageName
     description = spot.desc
     latitude = spot.latitude
     longitude = spot.longitude
 
-
-    page_contents = {'file_path' : image,
-                   'spot_name' : spot_name,
-                   'spot_description': description,
-                   'spot_latitude': latitude,
-                   'spot_longitude': longitude}
+    page_contents = {'file_path': image,
+                     'spot_name': spot_name,
+                     'spot_description': description,
+                     'spot_latitude': latitude,
+                     'spot_longitude': longitude}
 
     return render(request, 'home.html', page_contents)
 
@@ -332,7 +330,7 @@ def leaderboard(request):
         # By this point, if user_position doesn't exist, the user is NOT in the UserInfo table!!!
         if user_position is not None:  # This avoids errors if the user doesn't have a UserInfo entry (WHICH
             # SHOULD NEVER BE EXPERIENCED IF SIGNUP IMPLEMENTED AS REQUESTED)
-            adjacent = UserInfo.objects.order_by(sort_column, other)[user_position-2:user_position+1]
+            adjacent = UserInfo.objects.order_by(sort_column, other)[user_position - 2:user_position + 1]
             # Since we have found the user, we are now going BACK a step to evaluate the rank above the user. As such
             # we need to revert the position/buffer state to how it was when evaluating the record above the user
             if prev_buf is None:  # This means the user is in eighth place, and thus no action need be taken
@@ -364,6 +362,7 @@ def leaderboard(request):
                    'extra': additional_rankings, 'position': user_position}
 
     return render(request, 'leaderboard.html', pageContent)
+
 
 def profile_page(request):
     """This view facilitates the display of the leaderboard at exseed.duckdns.org/profile
@@ -400,10 +399,88 @@ def profile_page(request):
     user_info = UserInfo.objects.filter(user_id=user).values()
     streak = user_info[0]['currentStreak']
     title = user_info[0]['title']
+    profile_id = user_info[0]['avatarId_id']
+    profile_image = Avatar.objects.get(imageName=profile_id).avatarTitle
+    all_avatars_ref = Avatar.objects.values_list('avatarTitle')
+    all_avatars = list(all_avatars_ref)
     page_contents = {
         "streak": streak,
         "title": title,
-        "profileImage": "https://i.imgur.com/QP8EIWK.png"
+        "profileImage": profile_image,
+        "avatars": all_avatars,
     }
     return render(request, 'profile.html', page_contents)
 
+
+def compass(request):
+    user_agent = parse(request.META['HTTP_USER_AGENT'])
+    if not user_agent.is_mobile:
+        return render(request, 'QRCodePage.html')
+
+    # Checks if the user is logged in or not, if not they are automatically redirected
+    # to the login page
+    if not request.user.is_authenticated:
+        return redirect('/login')
+
+    # Find the date of today
+    today = datetime.date.today()
+
+    # Checks if there is a spot for today and if not a new one will be assigned
+    try:
+        spot = PreviousSpotAttend.objects.filter(spotDay=today).first().sId
+    except:
+        yesterday = today - datetime.timedelta(days=1)
+        # Continously keeps checking for a new spot until it finds one that is not the same as yesterdays
+        while True:
+            # pick a random spot
+            spot = random.choice(Spot.objects.all())
+            # check if that is the same as yesterday and if so get a new one
+            try:
+                if spot.id != PreviousSpotAttend.objects.filter(spotDay=yesterday)[0].sId:
+                    False
+            except:
+                break
+        # Assigns the new spot of the day as the new chosen one
+        PreviousSpotAttend(sId=spot, attendance=0, spotDay=today).save()
+
+    # Assigns the values of today's spot so they can be rendered into the website
+    spot_name = spot.name
+    image = spot.imageName
+    description = spot.desc
+    latitude = spot.latitude
+    longitude = spot.longitude
+
+    page_contents = {
+        'spot_lat': latitude,
+        'spot_long': longitude}
+    return render(request, 'compass.html', page_contents)
+
+def change_profile_picture(request):
+    """
+    :param request:
+        The Django-supplied web request that contains information about the current request to see this view
+    :return: redirect()
+        Redirecting the user to /profile where they can see their updated profile picture
+
+    @author: Sam Tebbet
+    """
+    user_agent = parse(request.META['HTTP_USER_AGENT'])
+    if not user_agent.is_mobile:
+        return render(request, 'QRCodePage.html')
+
+    # Checks if the user is logged in or not, if not they are automatically redirected
+    # to the login page
+    if not request.user.is_authenticated:
+        return redirect('/login')
+
+    if request.method == "POST":
+        chosen_pfp = request.POST.get('chosen_pfp')
+    user = request.user.pk
+
+    # Edits the user_info table to add the id of the new profile picture
+    to_edit = UserInfo.objects.get(user_id=user)
+    new_avatar = Avatar.objects.get(avatarTitle=chosen_pfp)
+    to_edit.avatarId_id = new_avatar.imageName
+    to_edit.save()
+
+    return redirect('/profile')
