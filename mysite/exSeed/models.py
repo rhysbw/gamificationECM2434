@@ -242,6 +242,7 @@ class UserRegister(models.Model):
     registerTime = models.TimeField(
         auto_now_add=True,
         help_text="The time that the record is created. Note, this field cannot be edited, and is automatically created",
+        validators=[valid_time]
     )
 
     registerTimeEditable = models.TimeField(
@@ -251,7 +252,7 @@ class UserRegister(models.Model):
     )
 
     def __str__(self):
-        return str(self.uId.username) + " attended the spot on " + str(self.srId.spotDay) + " at " + str(self.registerTimeEditable)
+        return str(self.uId.username) + " attended the spot on " + str(self.srId.spotDay) + " at " + str(self.registerTimeEditable) + " " + str(self.registerTime)
 
     class Meta:
         verbose_name_plural = "Register"

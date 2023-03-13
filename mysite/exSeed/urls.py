@@ -14,6 +14,7 @@ urlpatterns = [
     # exseed.duckdns.org/leaderboard is received
     path("compass", views.compass, name="compass"),
     path("profile", views.profile_page, name="profile"),
-    path("change_profile_picture", views.change_profile_picture, name ="change_profile_picture")
-    path("graph", views.graph)
+    path("change_profile_picture", views.change_profile_picture, name ="change_profile_picture"),
+    path("graph", views.graph, name="graph_test"),
+    path("addScore", views.addScore, name="score")
 ]

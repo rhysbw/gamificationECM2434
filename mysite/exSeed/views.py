@@ -6,7 +6,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
 
 from .forms import SignupForm, ProfilePictureForm
-from .models import Spot, UserInfo, PreviousSpotAttend, Avatar
+from .models import Spot, UserInfo, SpotRecord, Avatar, UserRegister
 import random
 
 from user_agents import parse
@@ -193,7 +193,7 @@ def home_page(request):
 
     # Checks if there is a spot for today and if not a new one will be assigned
     try:
-        spot = PreviousSpotAttend.objects.filter(spotDay=today).first().sId
+        spot = SpotRecord.objects.filter(spotDay=today).first().sId
     except:
         yesterday = today - datetime.timedelta(days=1)
         # Continously keeps checking for a new spot until it finds one that is not the same as yesterdays
@@ -202,12 +202,14 @@ def home_page(request):
             spot = random.choice(Spot.objects.all())
             # check if that is the same as yesterday and if so get a new one
             try:
-                if spot.id != PreviousSpotAttend.objects.filter(spotDay=yesterday)[0].sId:
+                if spot.id != SpotRecord.objects.filter(spotDay=yesterday)[0].sId:
                     False
             except:
                 break
         # Assigns the new spot of the day as the new chosen one
-        PreviousSpotAttend(sId=spot, attendance=0, spotDay=today).save()
+        SpotRecord(sId=spot, attendance=0, spotDay=today).save()
+
+        # ADD STREAK STUFF HERE
 
     # Assigns the values of today's spot so they can be rendered into the website
     spot_name = spot.name
@@ -413,7 +415,7 @@ def profile_page(request):
 
 def graph(request):
     # Gather all of today's niceness ratings
-    spot_data = UserRegister.objects.filter(srId__spotDay=datetime.date.today()).order_by('registerTimeEditable')
+    spot_data = UserRegister.objects.filter(srId__spotDay=datetime.date.today()).order_by('registerTime')
     # Array of all average values where index 0 = 6:00 and index 12 is 18:00
     averageNiceness = [0,0,0,0,0,0,0,0,0,0,0,0,0]
     raw_register = []  # This stores hour and score for each item in the db
@@ -421,7 +423,7 @@ def graph(request):
     hour_total = 0
     records_in_hour = 0
     for record in spot_data:
-        hour = record.registerTimeEditable.hour
+        hour = record.registerTime.hour
         if hour == previous_hour or previous_hour == -1:
             hour_total += record.spotNiceness
             records_in_hour += 1
@@ -448,3 +450,109 @@ def graph(request):
         "colours": background_colours,
     }
     return render(request, 'graph.html', page_contents)
+
+def compass(request):
+    user_agent = parse(request.META['HTTP_USER_AGENT'])
+    if not user_agent.is_mobile:
+        return render(request, 'QRCodePage.html')
+
+    # Checks if the user is logged in or not, if not they are automatically redirected
+    # to the login page
+    if not request.user.is_authenticated:
+        return redirect('/login')
+
+    # Find the date of today
+    today = datetime.date.today()
+
+    # Checks if there is a spot for today and if not a new one will be assigned
+    try:
+        spot = SpotRecord.objects.filter(spotDay=today).first().sId
+    except:
+        yesterday = today - datetime.timedelta(days=1)
+        # Continously keeps checking for a new spot until it finds one that is not the same as yesterdays
+        while True:
+            # pick a random spot
+            spot = random.choice(Spot.objects.all())
+            # check if that is the same as yesterday and if so get a new one
+            try:
+                if spot.id != SpotRecord.objects.filter(spotDay=yesterday)[0].sId:
+                    False
+            except:
+                break
+        # Assigns the new spot of the day as the new chosen one
+        SpotRecord(sId=spot, attendance=0, spotDay=today).save()
+
+    # Assigns the values of today's spot so they can be rendered into the website
+    spot_name = spot.name
+    image = spot.imageName
+    description = spot.desc
+    latitude = spot.latitude
+    longitude = spot.longitude
+
+    page_contents = {
+        'spot_lat': latitude,
+        'spot_long': longitude}
+    return render(request, 'compass.html', page_contents)
+
+def change_profile_picture(request):
+    """
+    :param request:
+        The Django-supplied web request that contains information about the current request to see this view
+    :return: redirect()
+        Redirecting the user to /profile where they can see their updated profile picture
+
+    @author: Sam Tebbet
+    """
+    user_agent = parse(request.META['HTTP_USER_AGENT'])
+    if not user_agent.is_mobile:
+        return render(request, 'QRCodePage.html')
+
+    # Checks if the user is logged in or not, if not they are automatically redirected
+    # to the login page
+    if not request.user.is_authenticated:
+        return redirect('/login')
+
+    if request.method == "POST":
+        chosen_pfp = request.POST.get('chosen_pfp')
+    user = request.user.pk
+
+    # Edits the user_info table to add the id of the new profile picture
+    to_edit = UserInfo.objects.get(user_id=user)
+    new_avatar = Avatar.objects.get(avatarTitle=chosen_pfp)
+    to_edit.avatarId_id = new_avatar.imageName
+    to_edit.save()
+
+    return redirect('/profile')
+
+def addScore(request):
+    # Checks if the user is on a desktop instead of mobile and if
+    # so renders the QR code page
+    user_agent = parse(request.META['HTTP_USER_AGENT'])
+    if not user_agent.is_mobile:
+        return render(request, 'QRCodePage.html')
+
+    # Checks if the user is logged in or not, if not they are automatically redirected
+    # to the login page
+    if not request.user.is_authenticated:
+        return redirect('/login')
+
+    now = datetime.datetime.now()
+    nowTime = now.time()
+    if nowTime.hour < 6 or nowTime.hour > 18:
+        return render(request, 'error.html', {'error': 'time'})
+
+    try:
+        spot = SpotRecord.objects.get(spotDay=datetime.date.today())
+        register = UserRegister.objects.get(uId=request.user, srId=spot)
+        # If there is no error in fetching this record then the current user has already registered
+        print("Hey")
+    except:
+        # Adds their score to the database
+        info = UserInfo.objects.get(user__pk=request.user.pk)
+        info.totalPoints = info.totalPoints + 1
+        info.currentStreak = info.currentStreak + 1
+        info.save()
+        UserRegister(uId=request.user, srId=spot, spotNiceness=1, registerTimeEditable=nowTime).save()
+        return redirect('/')
+
+    return render(request, 'error.html', {'error': 'already'})

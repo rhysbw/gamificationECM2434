@@ -181,9 +181,13 @@
             {{ spot_description }}
         </div>
         <div class="button_container">
-            <button class="here_button" id="here_button" onclick="alert('You have arrived');">
+            <form action = {% url 'score' %} method="POST">
+                {% csrf_token %}
+            <button class="here_button" id="here_button" type="submit">
+                <!-- HERE is where we update the points. Have onclick function written above -->
                 I'm Here!
             </button>
+            </form>
 
             <button class="spot_button">
                 <a href="https://maps.google.com/?q={{ spot_latitude }},{{ spot_longitude }}"> Find Spot </a>
