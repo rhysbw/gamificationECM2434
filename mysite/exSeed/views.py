@@ -411,76 +411,40 @@ def profile_page(request):
     }
     return render(request, 'profile.html', page_contents)
 
-
-def compass(request):
-    user_agent = parse(request.META['HTTP_USER_AGENT'])
-    if not user_agent.is_mobile:
-        return render(request, 'QRCodePage.html')
-
-    # Checks if the user is logged in or not, if not they are automatically redirected
-    # to the login page
-    if not request.user.is_authenticated:
-        return redirect('/login')
-
-    # Find the date of today
-    today = datetime.date.today()
-
-    # Checks if there is a spot for today and if not a new one will be assigned
-    try:
-        spot = PreviousSpotAttend.objects.filter(spotDay=today).first().sId
-    except:
-        yesterday = today - datetime.timedelta(days=1)
-        # Continously keeps checking for a new spot until it finds one that is not the same as yesterdays
-        while True:
-            # pick a random spot
-            spot = random.choice(Spot.objects.all())
-            # check if that is the same as yesterday and if so get a new one
+def graph(request):
+    # Gather all of today's niceness ratings
+    spot_data = UserRegister.objects.filter(srId__spotDay=datetime.date.today()).order_by('registerTimeEditable')
+    # Array of all average values where index 0 = 6:00 and index 12 is 18:00
+    averageNiceness = [0,0,0,0,0,0,0,0,0,0,0,0,0]
+    raw_register = []  # This stores hour and score for each item in the db
+    previous_hour = -1
+    hour_total = 0
+    records_in_hour = 0
+    for record in spot_data:
+        hour = record.registerTimeEditable.hour
+        if hour == previous_hour or previous_hour == -1:
+            hour_total += record.spotNiceness
+            records_in_hour += 1
+        else:
             try:
-                if spot.id != PreviousSpotAttend.objects.filter(spotDay=yesterday)[0].sId:
-                    False
-            except:
-                break
-        # Assigns the new spot of the day as the new chosen one
-        PreviousSpotAttend(sId=spot, attendance=0, spotDay=today).save()
+                averageNiceness[previous_hour - 6] = float(hour_total) / records_in_hour
+            except IndexError:  # Makes sure erroneous hour values don't cause a crash
+                pass
+            hour_total = record.spotNiceness
+            records_in_hour = 1
+        previous_hour = hour
 
-    # Assigns the values of today's spot so they can be rendered into the website
-    spot_name = spot.name
-    image = spot.imageName
-    description = spot.desc
-    latitude = spot.latitude
-    longitude = spot.longitude
+    background_colours = []
+    for item in averageNiceness:
+        if item < 2:
+            background_colours.append("rgb(238,75,43)")
+        elif item < 3.5:
+            background_colours.append("#FF9900")
+        else:
+            background_colours.append("rgb(0,255,0)")
 
     page_contents = {
-        'spot_lat': latitude,
-        'spot_long': longitude}
-    return render(request, 'compass.html', page_contents)
-
-def change_profile_picture(request):
-    """
-    :param request:
-        The Django-supplied web request that contains information about the current request to see this view
-    :return: redirect()
-        Redirecting the user to /profile where they can see their updated profile picture
-
-    @author: Sam Tebbet
-    """
-    user_agent = parse(request.META['HTTP_USER_AGENT'])
-    if not user_agent.is_mobile:
-        return render(request, 'QRCodePage.html')
-
-    # Checks if the user is logged in or not, if not they are automatically redirected
-    # to the login page
-    if not request.user.is_authenticated:
-        return redirect('/login')
-
-    if request.method == "POST":
-        chosen_pfp = request.POST.get('chosen_pfp')
-    user = request.user.pk
-
-    # Edits the user_info table to add the id of the new profile picture
-    to_edit = UserInfo.objects.get(user_id=user)
-    new_avatar = Avatar.objects.get(avatarTitle=chosen_pfp)
-    to_edit.avatarId_id = new_avatar.imageName
-    to_edit.save()
-
-    return redirect('/profile')
+        "spot_data": averageNiceness,
+        "colours": background_colours,
+    }
+    return render(request, 'graph.html', page_contents)
