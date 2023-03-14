@@ -252,7 +252,7 @@ class UserRegister(models.Model):
     )
 
     def __str__(self):
-        return str(self.uId.username) + " attended the spot on " + str(self.srId.spotDay) + " at " + str(self.registerTimeEditable) + " " + str(self.registerTime)
+        return str(self.uId.username) + " attended the spot on " + str(self.srId.spotDay) + " at " + " " + str(self.registerTime)
 
     class Meta:
         verbose_name_plural = "Register"

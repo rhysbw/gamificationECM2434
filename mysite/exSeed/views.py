@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.models import User
+from django.db.models import Q
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
 
@@ -193,24 +194,32 @@ def home_page(request):
 
     # Checks if there is a spot for today and if not a new one will be assigned
     try:
-        spot = SpotRecord.objects.filter(spotDay=today).first().sId
+        spot = SpotRecord.objects.get(spotDay=today).sId
     except:
+        # This clause is entered when there is no spot set to today
         yesterday = today - datetime.timedelta(days=1)
-        # Continously keeps checking for a new spot until it finds one that is not the same as yesterdays
+        print(yesterday)
+        # Continuously checks for a new spot until it finds one that is not the same as yesterdays
         while True:
             # pick a random spot
             spot = random.choice(Spot.objects.all())
             # check if that is the same as yesterday and if so get a new one
             try:
-                if spot.id != SpotRecord.objects.filter(spotDay=yesterday)[0].sId:
-                    False
+                if spot.pk != SpotRecord.objects.get(spotDay=yesterday).sId.pk:
+                    break
             except:
+                # This case is entered when there is no spot assigned to yesterday
+                # In this case, there is no concern for picking yesterday's spot, since it doesn't exist
                 break
         # Assigns the new spot of the day as the new chosen one
-        SpotRecord(sId=spot, attendance=0, spotDay=today).save()
+        SpotRecord(sId=spot, spotDay=today).save()
 
         # ADD STREAK STUFF HERE
-
+        yesterdaysRegister = UserInfo.objects.filter(~Q(lastSpotRegister=yesterday))
+        yesterdaysRegister.update(currentStreak=0)
+        for item in yesterdaysRegister:
+            print("saving item ", item)
+            item.save()
     # Assigns the values of today's spot so they can be rendered into the website
     spot_name = spot.name
     image = spot.imageName
@@ -298,7 +307,7 @@ def leaderboard(request):
         if user == record.user.pk:
             user_in_top_five = True  # User found in top 5, so no additional_rankings required
             user_position = position + buffer  # The users index in the ordered table
-        prev_position_score = getattr(record, column_name)  # Saves prevous rank's score
+        prev_position_score = getattr(record, column_name)  # Saves previous rank's score
 
     # Elif the user is within the top 7, gather only their record and any above (so if 6, get only 6)
     if not user_in_top_five:
@@ -416,28 +425,32 @@ def profile_page(request):
 def graph(request):
     # Gather all of today's niceness ratings
     spot_data = UserRegister.objects.filter(srId__spotDay=datetime.date.today()).order_by('registerTime')
+    # If empty graph not wanted to be viewed, here is where we could check if spot_data had any contents and redirect
     # Array of all average values where index 0 = 6:00 and index 12 is 18:00
-    averageNiceness = [0,0,0,0,0,0,0,0,0,0,0,0,0]
+    averageStars = [0,0,0,0,0,0,0,0,0,0,0,0,0]
     raw_register = []  # This stores hour and score for each item in the db
     previous_hour = -1
     hour_total = 0
     records_in_hour = 0
     for record in spot_data:
         hour = record.registerTime.hour
-        if hour == previous_hour or previous_hour == -1:
+        if hour == previous_hour or previous_hour == -1:  # If the previous_hour is -1 then this is the first record
             hour_total += record.spotNiceness
             records_in_hour += 1
         else:
-            try:
-                averageNiceness[previous_hour - 6] = float(hour_total) / records_in_hour
-            except IndexError:  # Makes sure erroneous hour values don't cause a crash
-                pass
+            averageStars[previous_hour - 6] = float(hour_total) / records_in_hour
             hour_total = record.spotNiceness
             records_in_hour = 1
         previous_hour = hour
+    try:
+        averageStars[previous_hour - 6] = float(hour_total) / records_in_hour  # Makes sure the final value is added
+    except IndexError:
+        pass  # Avoids previous_hour calling an index that is not present (aka -7)
+    except ZeroDivisionError:
+        pass  # Avoids zero division when no records are returned to spot_data
 
     background_colours = []
-    for item in averageNiceness:
+    for item in averageStars:
         if item < 2:
             background_colours.append("rgb(238,75,43)")
         elif item < 3.5:
@@ -446,7 +459,7 @@ def graph(request):
             background_colours.append("rgb(0,255,0)")
 
     page_contents = {
-        "spot_data": averageNiceness,
+        "spot_data": averageStars,
         "colours": background_colours,
     }
     return render(request, 'graph.html', page_contents)
@@ -464,23 +477,11 @@ def compass(request):
     # Find the date of today
     today = datetime.date.today()
 
-    # Checks if there is a spot for today and if not a new one will be assigned
+    # Checks if there is a spot for today and if not returns the user to the home page (where one will be assigned)
     try:
         spot = SpotRecord.objects.filter(spotDay=today).first().sId
     except:
-        yesterday = today - datetime.timedelta(days=1)
-        # Continously keeps checking for a new spot until it finds one that is not the same as yesterdays
-        while True:
-            # pick a random spot
-            spot = random.choice(Spot.objects.all())
-            # check if that is the same as yesterday and if so get a new one
-            try:
-                if spot.id != SpotRecord.objects.filter(spotDay=yesterday)[0].sId:
-                    False
-            except:
-                break
-        # Assigns the new spot of the day as the new chosen one
-        SpotRecord(sId=spot, attendance=0, spotDay=today).save()
+        return redirect('/')
 
     # Assigns the values of today's spot so they can be rendered into the website
     spot_name = spot.name
@@ -541,18 +542,28 @@ def addScore(request):
     if nowTime.hour < 6 or nowTime.hour > 18:
         return render(request, 'error.html', {'error': 'time'})
 
+    # Checks if there is a spot for today and if not returns the user to the home page (where one will be assigned)
     try:
         spot = SpotRecord.objects.get(spotDay=datetime.date.today())
+    except:
+        return redirect('/')
+    try:
         register = UserRegister.objects.get(uId=request.user, srId=spot)
         # If there is no error in fetching this record then the current user has already registered
-        print("Hey")
     except:
         # Adds their score to the database
         info = UserInfo.objects.get(user__pk=request.user.pk)
+        print(str(info.totalPoints) + "\n\n" + str(info.totalPoints + 1))
         info.totalPoints = info.totalPoints + 1
+        print(str(info.totalPoints) + "\n")
+        print(str(info.currentStreak) + "\n\n" + str(info.currentStreak + 1))
         info.currentStreak = info.currentStreak + 1
-        info.save()
+        print(info.currentStreak)
+        info.lastSpotRegister = datetime.date.today()
+        spot.attendance = spot.attendance + 1
         UserRegister(uId=request.user, srId=spot, spotNiceness=1, registerTimeEditable=nowTime).save()
+        spot.save()
+        info.save()
         return redirect('/')
 
     return render(request, 'error.html', {'error': 'already'})
