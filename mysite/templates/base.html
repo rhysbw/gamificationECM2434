@@ -4,10 +4,10 @@
 <!--- author Benjamin--->
 <head>
     <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-    <title>Spot of The Day</title>
+    <title>Spot of The Day</title> {% load static %}
 
-  {% load static %}
     <link rel="stylesheet" href="{% static 'bootstrap.min.css' %}">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Alatsi&amp;display=swap">
     <link rel="stylesheet" href="{% static 'Navbar-Right-Links-icons.css' %}">
@@ -45,9 +45,10 @@
             </div>
         </div>
     </nav>
-    <script src="{% static 'bootstrap.min.js' %}"></script>
 
-    <!--- creates a block where all other pages can put their content --->
+   
+ <script src="{% static 'jquery.min.js' %}"></script>
+    <script src="{% static 'bootstrap.min.js' %}"></script>
     {% block content %}
 
     {% endblock %}

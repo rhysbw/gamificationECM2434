@@ -10,8 +10,7 @@ urlpatterns = [
     path("logout", views.logout_request, name="logout"),
     path("delete/<username>", views.delete_request, name='delete'),
     path('', views.home_page, name="home"),
-    path("leaderboard", views.leaderboard, name="leaderboard"),  # Refers to the leaderboard view when
-    # exseed.duckdns.org/leaderboard is received
+    path("leaderboard", views.leaderboard, name="leaderboard"), 
     path("profile", views.profile_page, name ="profile"),
     path("compass", views.compass, name="compass")
 ]
