@@ -12,5 +12,6 @@ urlpatterns = [
     path('', views.home_page, name="home"),
     path("leaderboard", views.leaderboard, name="leaderboard"), 
     path("profile", views.profile_page, name ="profile"),
-    path("compass", views.compass, name="compass")
+    path("compass", views.compass, name="compass"),
+    path("change_profile_picture", views.change_profile_picture, name ="change_profile_picture")
 ]

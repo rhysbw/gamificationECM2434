@@ -3,8 +3,9 @@ from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.decorators import login_required
 
-from .forms import SignupForm
+from .forms import SignupForm, ProfilePictureForm
 from .models import Spot, UserInfo, PreviousSpotAttend, Avatar
 import random
 
@@ -146,7 +147,7 @@ def delete_request(request, username):
             The Django-supplied web request that contains information about the current request to see this view
     :param username:
             Username of the user deleting their account
-    :return render()
+    :return redirect()
             Redirects the user to '/' where they will be able to see the spot of the day
     @author: Sam Tebbet
     """
@@ -398,10 +399,15 @@ def profile_page(request):
     user_info = UserInfo.objects.filter(user_id=user).values()
     streak = user_info[0]['currentStreak']
     title = user_info[0]['title']
+    profile_id = user_info[0]['avatarId_id']
+    profile_image = Avatar.objects.get(imageName=profile_id).avatarTitle
+    all_avatars_ref = Avatar.objects.values_list('avatarTitle')
+    all_avatars = list(all_avatars_ref)
     page_contents = {
         "streak": streak,
         "title": title,
-        "profileImage": "https://i.imgur.com/QP8EIWK.png"
+        "profileImage": profile_image,
+        "avatars": all_avatars,
     }
     return render(request, 'profile.html', page_contents)
 
@@ -448,3 +454,34 @@ def compass(request):
         'spot_lat': latitude,
         'spot_long': longitude}
     return render(request, 'compass.html', page_contents)
+
+
+def change_profile_picture(request):
+    """
+    :param request:
+        The Django-supplied web request that contains information about the current request to see this view
+    :return: redirect()
+        Redirecting the user to /profile where they can see their updated profile picture
+
+    @author: Sam Tebbet
+    """
+    user_agent = parse(request.META['HTTP_USER_AGENT'])
+    if not user_agent.is_mobile:
+        return render(request, 'QRCodePage.html')
+
+    # Checks if the user is logged in or not, if not they are automatically redirected
+    # to the login page
+    if not request.user.is_authenticated:
+        return redirect('/login')
+
+    if request.method == "POST":
+        chosen_pfp = request.POST.get('chosen_pfp')
+    user = request.user.pk
+
+    # Edits the user_info table to add the id of the new profile picture
+    to_edit = UserInfo.objects.get(user_id=user)
+    new_avatar = Avatar.objects.get(avatarTitle=chosen_pfp)
+    to_edit.avatarId_id = new_avatar.imageName
+    to_edit.save()
+
+    return redirect('/profile')
