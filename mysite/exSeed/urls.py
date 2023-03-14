@@ -21,9 +21,14 @@ urlpatterns = [
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     path("compass", views.compass, name="compass"),
     path("change_profile_picture", views.change_profile_picture, name ="change_profile_picture")
 ]
+=======
+    path("compass", views.compass, name="compass")
+]
+>>>>>>> Stashed changes
 =======
     path("compass", views.compass, name="compass")
 ]
