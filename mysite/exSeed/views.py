@@ -9,7 +9,6 @@ from django.contrib.auth.decorators import login_required
 from .forms import SignupForm, ProfilePictureForm
 from .models import Spot, UserInfo, SpotRecord, Avatar, UserRegister
 import random
-
 from user_agents import parse
 import datetime
 
@@ -537,6 +536,11 @@ def addScore(request):
     if not request.user.is_authenticated:
         return redirect('/login')
 
+    if request.method == "POST":
+        user_spot_rating = int(request.POST.get('star'))
+    else:
+        redirect('/')
+
     now = datetime.datetime.now()
     nowTime = now.time()
     if nowTime.hour < 6 or nowTime.hour > 18:
@@ -547,12 +551,14 @@ def addScore(request):
         spot = SpotRecord.objects.get(spotDay=datetime.date.today())
     except:
         return redirect('/')
+
     try:
         register = UserRegister.objects.get(uId=request.user, srId=spot)
         # If there is no error in fetching this record then the current user has already registered
-    except:
+    except  :
         # Adds their score to the database
-        info = UserInfo.objects.get(user__pk=request.user.pk)
+        print(request.user.pk)
+        info = UserInfo.objects.get(user_id=request.user.pk)
         print(str(info.totalPoints) + "\n\n" + str(info.totalPoints + 1))
         info.totalPoints = info.totalPoints + 1
         print(str(info.totalPoints) + "\n")
@@ -561,7 +567,7 @@ def addScore(request):
         print(info.currentStreak)
         info.lastSpotRegister = datetime.date.today()
         spot.attendance = spot.attendance + 1
-        UserRegister(uId=request.user, srId=spot, spotNiceness=1, registerTimeEditable=nowTime).save()
+        UserRegister(uId=request.user, srId=spot, spotNiceness=user_spot_rating, registerTimeEditable=nowTime).save()
         spot.save()
         info.save()
         return redirect('/')
