@@ -14,17 +14,46 @@
             height: 100vh;
         }
 
-        .image_container {
+        .flip-card {
             position: absolute;
             top: 0;
-            left: 0;
+            left: 50%;
+            transform: translateX(-50%);
             height: 50%;
-            width: 100%;
+            width: 37.5%;
             display: flex;
             justify-content: center;
             align-items: center;
+        }
 
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+        }
 
+        .flip-card-inner.flip {
+          transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+          color: white;
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          -webkit-backface-visibility: hidden;
+          backface-visibility: hidden;
+        }
+
+        .flip-card-back {
+            transform: rotateY(180deg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: black;
         }
 
         .text_container {
@@ -35,7 +64,6 @@
             align-content: center;
             text-align: center;
             padding-bottom: 5%;
-
         }
 
 
@@ -51,14 +79,16 @@
             align-items: center;
         }
 
-        .image_container img {
+        .flip-card img {
             position: absolute;
-            display: inline-grid;
-            border-radius: 10px;
-            width: auto;
-            height: 90%;
-            top: 5%;
-            box-shadow: 0px 0px 10px 5px #285430;
+              left: 50%;
+              top: 50%;
+              transform: translate(-50%, -50%);
+              display: inline-grid;
+              width: auto;
+              height: 90%;
+              border: 5px solid #285430;
+              border-radius: 10px;
         }
 
         .here_button, .spot_button {
@@ -172,10 +202,18 @@
 <!--- block that will add the body content into base.html --->
 {% block content %}
     <div class="page_container">
-        <div class="image_container">
-            <img src="{{ file_path }}" class="image">
+        <div class = "flip-card">
+            <div class="flip-card-inner" onclick="this.classList.toggle('flip')">
+                <div class="flip-card-front">
+                    <img src="{{ file_path }}" class="image">
+                </div>
 
+                <div class = "flip-card-back">
+                    balls
+                </div>
+            </div>
         </div>
+
         <div class="text_container">
             <h1> {{ spot_name }}</h1>
             {{ spot_description }}
