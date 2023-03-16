@@ -410,8 +410,8 @@ def profile_page(request):
     streak = user_info[0]['currentStreak']
     title = user_info[0]['title']
     profile_id = user_info[0]['avatarId_id']
-    profile_image = Avatar.objects.get(imageName=profile_id).avatarTitle
-    all_avatars_ref = Avatar.objects.values_list('avatarTitle')
+    profile_image = Avatar.objects.get(id=profile_id).imageName
+    all_avatars_ref = Avatar.objects.values_list('imageName')
     all_avatars = list(all_avatars_ref)
     page_contents = {
         "streak": streak,
