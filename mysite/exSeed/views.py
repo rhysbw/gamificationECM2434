@@ -525,6 +525,12 @@ def change_profile_picture(request):
     return redirect('/profile')
 
 def addScore(request):
+    """
+    This function adds the users rating of the spot to the db
+    :param request:
+        The Django-supplied web request that contains information about the current request to see this view
+    :return: redirect to web page
+    """
     # Checks if the user is on a desktop instead of mobile and if
     # so renders the QR code page
     user_agent = parse(request.META['HTTP_USER_AGENT'])
