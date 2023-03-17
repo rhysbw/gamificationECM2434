@@ -6,7 +6,6 @@
     <style>
 
 
-
         .page_container {
             display: flex;
             flex-direction: column;
@@ -18,25 +17,25 @@
 
 
         .compass {
-          transform: translateY(20%);
-          width: 80vw;
-          height: 80vw;
-          border-radius: 50%;
-          background: url("https://i.imgur.com/okAyJ4m.png") center / contain no-repeat;
-          display: flex;
-          justify-content: center;
-          align-items: center;
+            transform: translateY(20%);
+            width: 80vw;
+            height: 80vw;
+            border-radius: 50%;
+            background: url("https://i.imgur.com/okAyJ4m.png") center / contain no-repeat;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .compass img {
-          width: 100%;
-          height: 100%;
-          display: block;
+            width: 100%;
+            height: 100%;
+            display: block;
         }
 
         .start-btn {
-          margin-top: 50%;
-          margin-bottom: auto;
+            margin-top: 50%;
+            margin-bottom: auto;
         }
 
     </style>
@@ -47,7 +46,7 @@
 {% block content %}
     <div class="page_container">
         <div class="compass" id="compass">
-            <img src="https://i.imgur.com/jpxEmwB.png" id = "line">
+            <img src="https://i.imgur.com/jpxEmwB.png" id="line">
             <div class="my-point" id="my-point"></div>
         </div>
 
@@ -102,20 +101,18 @@
 
             // Rotates line to always face spot
             document.getElementById("line").style.transform = `rotate(${-compass + pointDegree}deg)`;
-            // ±15 degree
-            // Sets middle point to visible or not
+            // ±10 degrees to see if user is pointing at spot
             if (
                 (pointDegree < Math.abs(compass) &&
-                    pointDegree + 15 > Math.abs(compass)) ||
-                pointDegree > Math.abs(compass + 15) ||
-                pointDegree < Math.abs(compass)
+                    pointDegree + 10 > Math.abs(compass)) || (pointDegree - 10 < Math.abs(compass) &&
+                    pointDegree > Math.abs(compass))
             ) {
-                // User isn't looking towards the spot
+                // User is looking towards the spot
+                document.getElementById("line").src = "https://i.imgur.com/gSjp1fb.png";
+            } else if (pointDegree) {
+                // User isn't currently facing the spot
                 document.getElementById("line").src = "https://i.imgur.com/jpxEmwB.png";
 
-            } else if (pointDegree) {
-                // User is currently facing the spot
-                document.getElementById("line").src = "https://i.imgur.com/gSjp1fb.png";
             }
         }
 
