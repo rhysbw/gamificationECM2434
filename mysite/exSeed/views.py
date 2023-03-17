@@ -11,6 +11,7 @@ from .models import Spot, UserInfo, SpotRecord, Avatar, UserRegister
 import random
 from user_agents import parse
 import datetime
+import json
 
 
 def position_buffer_calc(position, buffer, record, column_name, prev_pos_score):
@@ -416,6 +417,7 @@ def profile_page(request):
     page_contents = {
         "streak": streak,
         "title": title,
+        "titles": titles_dictionary['titles'],
         "profileImage": profile_image,
         "avatars": all_avatars,
     }
@@ -579,3 +581,79 @@ def addScore(request):
         return redirect('/')
 
     return render(request, 'error.html', {'error': 'already'})
+
+
+def change_title(request, title):
+    user_agent = parse(request.META['HTTP_USER_AGENT'])
+    if not user_agent.is_mobile:
+        return render(request, 'QRCodePage.html')
+
+    # Checks if the user is logged in or not, if not they are automatically redirected
+    # to the login page
+    if not request.user.is_authenticated:
+        return redirect('/login')
+
+    info = UserInfo.objects.get(user_id=request.user.pk)
+    info.title = title
+    info.save()
+    return redirect('/profile')
+
+
+
+titles_dictionary = {
+  "titles": [
+    "Captain Compost",
+    "Eco Warrior Princess",
+    "Sir Reduce-A-Lot",
+    "Sapling",
+    "Tree",
+    "Log",
+    "Big Tree",
+    "Large Trunk",
+    "Leaf",
+    "Lady Litter-Free",
+    "The Green Machine",
+    "The Recycling Queen",
+    "The Recycling King",
+    "The Sustainable Savant",
+    "Compost King",
+    "Compost Queen",
+    "The Waste Wizard",
+    "The Carbon Crusader",
+    "The Reusable Renegade",
+    "The Upcycling Unicorn",
+    "The Renewable Rocket",
+    "The Energy Elf",
+    "The Conservation Cowboy",
+    "The Thrift-Shop Titan",
+    "The Zero-Waste Zealot",
+    "The Pollution Punisher",
+    "The Eco-Enthusiast",
+    "The Green Guru",
+    "The Sustainability Superstar",
+    "The Planet Protector",
+    "The Eco Explorer",
+    "The Green Guardian",
+    "The Climate Crusader",
+    "The Carbon Footprint Fighter",
+    "The Sustainable Samurai",
+    "The Earth Advocate",
+    "The Renewable Energy Rockstar",
+    "The Eco-Friendly Enforcer",
+    "The Waste-Free Wonder",
+    "The Green Queen",
+    "The Green King",
+    "The Composting Connoisseur",
+    "The Trash-Talking Titan",
+    "The Green-Thumb Genius",
+    "The Ocean Crusader",
+    "The Energy Efficiency Expert",
+    "The Low-Impact Legend",
+    "The Greenery Gnome",
+    "The Green Mamba",
+    "Matt Collinson",
+    "The Wakinator",
+    "Liam",
+    "Nick The Distiller"
+  ]
+}

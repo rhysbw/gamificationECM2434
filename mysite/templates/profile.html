@@ -35,6 +35,11 @@ number_of_avatars: The length of the avatars list
         font-size: 20px;
     }
 
+    .title {
+        font-weight: bold;
+        font-size: 18px;
+    }
+
     .userContent {
         width: 100%;
         height: 60%;
@@ -114,12 +119,16 @@ number_of_avatars: The length of the avatars list
       outline: 2px solid black;
     }
 
+    @media (max-width: 500px) {
+    .dropdown-menu{
+        height:250px;
+        overflow-y:auto;
+    }
+}
+
 </style>
 {% endblock style %}
 
-{% block script %}
-
-{% endblock script %}
 <!--- block that will add the body content into base.html --->
 {% block content %}
 <div class="page-container">
@@ -128,10 +137,22 @@ number_of_avatars: The length of the avatars list
              <img src="{{ profileImage }}" alt="Click to change profile picture">
          </div>
         <div class="userContent">
-            <p class="userName"> Username: {{user.username}} </p>
+            <p class="userName"> {{user.username}} </p>
+            <p class="title">({{title}})</p>
             Streak: {{ streak }} <br>
-            Title: {{ title }} <br>
             Email: {{ user.email }} <br>
+            <div class="dropdown">
+              <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                Chage Title
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                  {% for other_title in titles %}
+                            <li><a class="dropdown-item" href="/change_title/{{other_title}}">{{other_title}}</a></li>
+                    {% endfor %}
+
+              </ul>
+            </div>
+
         </div>
 
 
