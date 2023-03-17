@@ -217,6 +217,7 @@
             if (navigator.geolocation) {
                 navigator.geolocation.watchPosition(checkLocation, handleError); // Current GPS location data call
             } else { // if error
+                document.getElementById("here_button").disabled = true;
                 alert("Geolocation is not supported by this browser.");
             }
         }
