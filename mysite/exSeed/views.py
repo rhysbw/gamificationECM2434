@@ -112,7 +112,7 @@ def signup(request):
 
             user = authenticate(username=account_username, password=raw_password)
             login(request, user)
-            return redirect('home')
+            return redirect('pledge')
     else:
         form = SignupForm()
     return render(request, 'signup.html', {"register_form": form})
@@ -639,6 +639,9 @@ def change_title(request, title):
     info.title = title
     info.save()
     return redirect('/profile')
+
+def pledge(request):
+    return render(request, 'pledge.html')
 
 
 
