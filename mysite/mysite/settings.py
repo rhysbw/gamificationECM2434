@@ -23,12 +23,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-a0n*^vbgqbny=77u!#xu2%1a)&uhbd_$*n%grf1k%#ya4^zn8s'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["exseed.duckdns.org",
                  "ecm2434.duckdns.org",
                  "spotoftheday.duckdns.org",
-                 '127.0.0.1', 
+                 '127.0.0.1',
+		 '10.0.1.38', 
                  '192.168.0.31',  # Ben IP
                  '10.229.79.209',  # Sam IP
                  'localhost',
@@ -135,7 +136,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'mysite/static/')
+    os.path.join(BASE_DIR, 'mysite/static')
 ]
 
 # Default primary key field type
