@@ -13,6 +13,10 @@ urlpatterns = [
     path("leaderboard", views.leaderboard, name="leaderboard"), 
     path("profile", views.profile_page, name ="profile"),
     path("compass", views.compass, name="compass"),
-    path("change_profile_picture", views.change_profile_picture, name ="change_profile_picture")
+    path("profile", views.profile_page, name="profile"),
+    path("change_profile_picture", views.change_profile_picture, name ="change_profile_picture"),
+    path("graph", views.graph, name="graph_test"),
+    path("addScore", views.addScore, name="score"),
+    path("change_title/<title>", views.change_title, name="change_title")
 ]
 

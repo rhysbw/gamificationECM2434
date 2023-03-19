@@ -16,8 +16,6 @@ number_of_avatars: The length of the avatars list
 <style>
     .page-container {
         display: flex;
-        justify-content: center;
-        align-items: center;
         height: 100vh;
     }
 
@@ -33,6 +31,15 @@ number_of_avatars: The length of the avatars list
     .userName {
         font-weight: bold;
         font-size: 20px;
+    }
+
+    .title {
+        font-weight: normal;
+        font-size: 16px;
+    }
+
+    .dropdown-menu{
+        left: 25%
     }
 
     .userContent {
@@ -59,6 +66,39 @@ number_of_avatars: The length of the avatars list
         background-size: cover;
         transform: translate(0%, -100%);
     }
+    .image-container {
+      position: relative;
+      /* set the container's width and height to match the dimensions of the profile image */
+      width: 150px;
+      height: 150px;
+        top: 10px;
+      left: 10px;
+    }
+
+    .profile-image {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .streak-image {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      /* position the streak image at the bottom right corner of the container */
+      bottom: 0;
+      right: 0;
+    }
+
+    .user-info-container {
+        position: absolute;
+      /* set the container's width and height to match the dimensions of the profile image */
+      height: 150px;
+        top: 100px;
+      left: 180px;
+    }
 
     .small-circle {
         position: absolute;
@@ -70,11 +110,17 @@ number_of_avatars: The length of the avatars list
         justify-content: center;
         align-items: center;
     }
+
     img {
         border-radius: 50%;
         width: 95%;
         height: 95%
     }
+    p {
+        margin: 0;
+        padding: 0;
+    }
+
 
     .circle img {
         border-radius: 50%;
@@ -91,6 +137,8 @@ number_of_avatars: The length of the avatars list
         display: grid;
         grid-template-columns: auto auto auto;
     }
+
+
 
     .modal-dialog{
        width: 96.5%;
@@ -114,28 +162,41 @@ number_of_avatars: The length of the avatars list
       outline: 2px solid black;
     }
 
+    @media (max-width: 500px) {
+    .dropdown-menu{
+        height:250px;
+        overflow-y:auto;
+    }
+}
+
 </style>
 {% endblock style %}
 
-{% block script %}
-
-{% endblock script %}
 <!--- block that will add the body content into base.html --->
 {% block content %}
 <div class="page-container">
-    <div class="userContainer">
-         <div class="circle" data-bs-toggle="modal" data-bs-target="#editProfileModal">
-             <img src="{{ profileImage }}" alt="Click to change profile picture">
-         </div>
-        <div class="userContent">
-            <p class="userName"> Username: {{user.username}} </p>
-            Streak: {{ streak }} <br>
-            Title: {{ title }} <br>
-            Email: {{ user.email }} <br>
-        </div>
 
-
+    <div class = "image-container">
+        <img src="{{ profileImage }}" alt="Click to change profile picture" class = "profile-image" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+        <img src="https://i.imgur.com/BrsRkPM.png" class = "streak-image">
     </div>
+
+    <div class = "user-info-container">
+        <p class="userName"> {{user.username}} </p>
+        <p class="title">{{title}}</p>
+        <br>
+        <div class="dropdown">
+        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+            Change Title
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+            {% for other_title in titles %}
+                <li><a class="dropdown-item" href="/change_title/{{other_title}}">{{other_title}}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+    </div>
+
 </div>
 
 

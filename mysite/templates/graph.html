@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Graph Test{% endblock %}
+
+{% block style %}
+<style>
+
+</style>
+{% endblock %}
+
+{% block content %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <div>
+    <canvas id="bar" style="width:100%;height:400px;background-color:white;"></canvas>
+    </div>
+    <!--<canvas id="myChart" style="width:100%;max-width:700px"></canvas>-->
+    <script>
+
+    const ctx = document.getElementById('bar')
+
+    const labels = ['6:00','7:00','8:00','9:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00']
+    const dataValues = [3.5,4.2,3.3,2.5,1.3,1.2,2.1,2.6,3.6,3.9,4.3]
+    const bar_ctx = document.getElementById('bar').getContext('2d')
+    const background_1 = bar_ctx.createLinearGradient(0,0,0,350);
+    background_1.addColorStop(0.15, 'rgb(25,135,84)');
+    //background_1.addColorStop(0.4, 'orange');
+    background_1.addColorStop(0.85, '#EE6055');
+
+    new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'Star rating throughout the day',
+            data: {{ spot_data }},
+            barPercentage: 1.25,
+            backgroundColor:  {{ colours|safe }},
+            borderWidth: 1,
+        }]
+    },
+    options: {
+        plugins: {
+            legend: {
+                display: false,
+            },
+            tooltips: {
+                enabled: false,
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                title: {
+                    text: "Stars",
+                    display: true,
+                },
+                max: 5,
+                grid: {
+                    display: false,
+                }
+            },
+            x: {
+                title: {
+                    text: "Time",
+                    display: true,
+                },
+                grid: {
+                    display: false,
+                }
+            },
+        }
+    }
+    });
+    </script>
+    <div>
+    </div>
+{% endblock %}

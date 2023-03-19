@@ -2,15 +2,16 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.models import User
+from django.db.models import Q
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
 
 from .forms import SignupForm, ProfilePictureForm
-from .models import Spot, UserInfo, PreviousSpotAttend, Avatar
+from .models import Spot, UserInfo, SpotRecord, Avatar, UserRegister
 import random
-
 from user_agents import parse
 import datetime
+import json
 
 
 def position_buffer_calc(position, buffer, record, column_name, prev_pos_score):
@@ -38,6 +39,33 @@ def position_buffer_calc(position, buffer, record, column_name, prev_pos_score):
         new_pos += buffer
         new_buf = 1
     return new_pos, new_buf  # Gives the new position and buffer values back to the main code
+
+
+def streak_image(user_pk, imageType) -> str:
+    user = UserInfo.objects.get(user__pk=user_pk)
+    if imageType == "profile":
+        pictures = [
+            "https://i.imgur.com/ASOswDa.png",  # stage one
+            "https://i.imgur.com/KpWonCy.png",  # stage two
+            "https://i.imgur.com/uakyl0I.png",  # stage three
+            "https://i.imgur.com/D1xeyhK.png",  # stage four
+            "https://i.imgur.com/BrsRkPM.png"  # stage five and above
+        ]
+    elif imageType == "leaderboard":
+        pictures = [
+            "https://i.imgur.com/ASOswDa.png",  # stage one
+            "https://i.imgur.com/KpWonCy.png",  # stage two
+            "https://i.imgur.com/uakyl0I.png",  # stage three
+            "https://i.imgur.com/D1xeyhK.png",  # stage four
+            "https://i.imgur.com/BrsRkPM.png"  # stage five and above
+        ]
+    streak = user.currentStreak
+    if streak > 4:
+        streak = 5
+    elif streak == 0:
+        streak = 1
+
+    return pictures[streak - 1]
 
 
 # Create your views here.
@@ -193,22 +221,32 @@ def home_page(request):
 
     # Checks if there is a spot for today and if not a new one will be assigned
     try:
-        spot = PreviousSpotAttend.objects.filter(spotDay=today).first().sId
+        spot = SpotRecord.objects.get(spotDay=today).sId
     except:
+        # This clause is entered when there is no spot set to today
         yesterday = today - datetime.timedelta(days=1)
-        # Continously keeps checking for a new spot until it finds one that is not the same as yesterdays
+        print(yesterday)
+        # Continuously checks for a new spot until it finds one that is not the same as yesterdays
         while True:
             # pick a random spot
             spot = random.choice(Spot.objects.all())
             # check if that is the same as yesterday and if so get a new one
             try:
-                if spot.id != PreviousSpotAttend.objects.filter(spotDay=yesterday)[0].sId:
-                    False
+                if spot.pk != SpotRecord.objects.get(spotDay=yesterday).sId.pk:
+                    break
             except:
+                # This case is entered when there is no spot assigned to yesterday
+                # In this case, there is no concern for picking yesterday's spot, since it doesn't exist
                 break
         # Assigns the new spot of the day as the new chosen one
-        PreviousSpotAttend(sId=spot, attendance=0, spotDay=today).save()
+        SpotRecord(sId=spot, spotDay=today).save()
 
+        # ADD STREAK STUFF HERE
+        yesterdaysRegister = UserInfo.objects.filter(~Q(lastSpotRegister=yesterday))
+        yesterdaysRegister.update(currentStreak=0)
+        for item in yesterdaysRegister:
+            print("saving item ", item)
+            item.save()
     # Assigns the values of today's spot so they can be rendered into the website
     spot_name = spot.name
     image = spot.imageName
@@ -296,7 +334,7 @@ def leaderboard(request):
         if user == record.user.pk:
             user_in_top_five = True  # User found in top 5, so no additional_rankings required
             user_position = position + buffer  # The users index in the ordered table
-        prev_position_score = getattr(record, column_name)  # Saves prevous rank's score
+        prev_position_score = getattr(record, column_name)  # Saves previous rank's score
 
     # Elif the user is within the top 7, gather only their record and any above (so if 6, get only 6)
     if not user_in_top_five:
@@ -400,17 +438,61 @@ def profile_page(request):
     streak = user_info[0]['currentStreak']
     title = user_info[0]['title']
     profile_id = user_info[0]['avatarId_id']
-    profile_image = Avatar.objects.get(imageName=profile_id).avatarTitle
-    all_avatars_ref = Avatar.objects.values_list('avatarTitle')
+    profile_image = Avatar.objects.get(id=profile_id).imageName
+    all_avatars_ref = Avatar.objects.values_list('imageName')
     all_avatars = list(all_avatars_ref)
     page_contents = {
         "streak": streak,
         "title": title,
+        "titles": titles_dictionary['titles'],
         "profileImage": profile_image,
         "avatars": all_avatars,
     }
     return render(request, 'profile.html', page_contents)
 
+def graph(request):
+    # Gather all of today's niceness ratings
+    spot_data = UserRegister.objects.filter(srId__spotDay=datetime.date.today()).order_by('registerTime')
+    # If empty graph not wanted to be viewed, here is where we could check if spot_data had any contents and redirect
+    # Array of all average values where index 0 = 6:00 and index 12 is 18:00
+    averageStars = [0,0,0,0,0,0,0,0,0,0,0,0,0]
+    raw_register = []  # This stores hour and score for each item in the db
+    previous_hour = -1
+    hour_total = 0
+    records_in_hour = 0
+    for record in spot_data:
+        hour = record.registerTime.hour
+        if hour == previous_hour or previous_hour == -1:  # If the previous_hour is -1 then this is the first record
+            hour_total += record.spotNiceness
+            records_in_hour += 1
+        else:
+            averageStars[previous_hour - 6] = float(hour_total) / records_in_hour
+            hour_total = record.spotNiceness
+            records_in_hour = 1
+        previous_hour = hour
+    try:
+        averageStars[previous_hour - 6] = float(hour_total) / records_in_hour  # Makes sure the final value is added
+    except IndexError:
+        pass  # Avoids previous_hour calling an index that is not present (aka -7)
+    except ZeroDivisionError:
+        pass  # Avoids zero division when no records are returned to spot_data
+
+    background_colours = []
+    for item in averageStars:
+        if item < 2:
+            background_colours.append("rgb(238,75,43)")
+        elif item < 3.5:
+            background_colours.append("#FF9900")
+        else:
+            background_colours.append("rgb(0,255,0)")
+
+    picture_name = streak_image(request.user.pk, "profile")
+    page_contents = {
+        "spot_data": averageStars,
+        "colours": background_colours,
+        "pic": picture_name
+    }
+    return render(request, 'graph.html', page_contents)
 
 def compass(request):
     user_agent = parse(request.META['HTTP_USER_AGENT'])
@@ -425,23 +507,11 @@ def compass(request):
     # Find the date of today
     today = datetime.date.today()
 
-    # Checks if there is a spot for today and if not a new one will be assigned
+    # Checks if there is a spot for today and if not returns the user to the home page (where one will be assigned)
     try:
-        spot = PreviousSpotAttend.objects.filter(spotDay=today).first().sId
+        spot = SpotRecord.objects.filter(spotDay=today).first().sId
     except:
-        yesterday = today - datetime.timedelta(days=1)
-        # Continously keeps checking for a new spot until it finds one that is not the same as yesterdays
-        while True:
-            # pick a random spot
-            spot = random.choice(Spot.objects.all())
-            # check if that is the same as yesterday and if so get a new one
-            try:
-                if spot.id != PreviousSpotAttend.objects.filter(spotDay=yesterday)[0].sId:
-                    False
-            except:
-                break
-        # Assigns the new spot of the day as the new chosen one
-        PreviousSpotAttend(sId=spot, attendance=0, spotDay=today).save()
+        return redirect('/')
 
     # Assigns the values of today's spot so they can be rendered into the website
     spot_name = spot.name
@@ -479,8 +549,135 @@ def change_profile_picture(request):
 
     # Edits the user_info table to add the id of the new profile picture
     to_edit = UserInfo.objects.get(user_id=user)
-    new_avatar = Avatar.objects.get(avatarTitle=chosen_pfp)
-    to_edit.avatarId_id = new_avatar.imageName
+    new_avatar = Avatar.objects.get(imageName=chosen_pfp)
+    to_edit.avatarId_id = new_avatar.id
     to_edit.save()
 
     return redirect('/profile')
+
+def addScore(request):
+    """
+    This function adds the users rating of the spot to the db
+    :param request:
+        The Django-supplied web request that contains information about the current request to see this view
+    :return: redirect to web page
+    """
+    # Checks if the user is on a desktop instead of mobile and if
+    # so renders the QR code page
+    user_agent = parse(request.META['HTTP_USER_AGENT'])
+    if not user_agent.is_mobile:
+        return render(request, 'QRCodePage.html')
+
+    # Checks if the user is logged in or not, if not they are automatically redirected
+    # to the login page
+    if not request.user.is_authenticated:
+        return redirect('/login')
+
+    if request.method == "POST":
+        user_spot_rating = int(request.POST.get('star'))
+    else:
+        redirect('/')
+
+    now = datetime.datetime.now()
+    nowTime = now.time()
+    if nowTime.hour < 6 or nowTime.hour > 18:
+        return render(request, 'error.html', {'error': 'time'})
+
+    # Checks if there is a spot for today and if not returns the user to the home page (where one will be assigned)
+    try:
+        spot = SpotRecord.objects.get(spotDay=datetime.date.today())
+    except:
+        return redirect('/')
+
+    try:
+        register = UserRegister.objects.get(uId=request.user, srId=spot)
+        # If there is no error in fetching this record then the current user has already registered
+    except  :
+        # Adds their score to the database
+        info = UserInfo.objects.get(user_id=request.user.pk)
+        info.totalPoints = info.totalPoints + 1
+        info.currentStreak = info.currentStreak + 1
+        info.lastSpotRegister = datetime.date.today()
+        spot.attendance = spot.attendance + 1
+        UserRegister(uId=request.user, srId=spot, spotNiceness=user_spot_rating, registerTimeEditable=nowTime).save()
+        spot.save()
+        info.save()
+        return redirect('/')
+
+    return render(request, 'error.html', {'error': 'already'})
+
+
+def change_title(request, title):
+    user_agent = parse(request.META['HTTP_USER_AGENT'])
+    if not user_agent.is_mobile:
+        return render(request, 'QRCodePage.html')
+
+    # Checks if the user is logged in or not, if not they are automatically redirected
+    # to the login page
+    if not request.user.is_authenticated:
+        return redirect('/login')
+
+    info = UserInfo.objects.get(user_id=request.user.pk)
+    info.title = title
+    info.save()
+    return redirect('/profile')
+
+
+
+titles_dictionary = {
+  "titles": [
+    "Captain Compost",
+    "Eco Warrior Princess",
+    "Sir Reduce-A-Lot",
+    "Sapling",
+    "Tree",
+    "Log",
+    "Big Tree",
+    "Large Trunk",
+    "Leaf",
+    "Lady Litter-Free",
+    "The Green Machine",
+    "The Recycling Queen",
+    "The Recycling King",
+    "The Sustainable Savant",
+    "Compost King",
+    "Compost Queen",
+    "The Waste Wizard",
+    "The Carbon Crusader",
+    "The Reusable Renegade",
+    "The Upcycling Unicorn",
+    "The Renewable Rocket",
+    "The Energy Elf",
+    "The Conservation Cowboy",
+    "The Thrift-Shop Titan",
+    "The Zero-Waste Zealot",
+    "The Pollution Punisher",
+    "The Eco-Enthusiast",
+    "The Green Guru",
+    "The Sustainability Superstar",
+    "The Planet Protector",
+    "The Eco Explorer",
+    "The Green Guardian",
+    "The Climate Crusader",
+    "The Carbon Footprint Fighter",
+    "The Sustainable Samurai",
+    "The Earth Advocate",
+    "The Renewable Energy Rockstar",
+    "The Eco-Friendly Enforcer",
+    "The Waste-Free Wonder",
+    "The Green Queen",
+    "The Green King",
+    "The Composting Connoisseur",
+    "The Trash-Talking Titan",
+    "The Green-Thumb Genius",
+    "The Ocean Crusader",
+    "The Energy Efficiency Expert",
+    "The Low-Impact Legend",
+    "The Greenery Gnome",
+    "The Green Mamba",
+    "Matt Collinson",
+    "The Wakinator",
+    "Liam",
+    "Nick The Distiller"
+  ]
+}

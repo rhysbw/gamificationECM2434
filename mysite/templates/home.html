@@ -14,6 +14,45 @@
             height: 100vh;
         }
 
+        .flip-card {
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+        }
+
+        .flip-card-inner.flip {
+          transform: rotateY(180deg);
+        }
+
+        .flip-card-front, .flip-card-back {
+          color: white;
+          position: absolute;
+          width: 100%;
+          height: 100%;
+          -webkit-backface-visibility: hidden;
+          backface-visibility: hidden;
+        }
+
+        .flip-card-back {
+            transform: rotateY(180deg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: black;
+        }
+
         .image_container {
             position: absolute;
             top: 0;
@@ -23,53 +62,53 @@
             display: flex;
             justify-content: center;
             align-items: center;
-
-
-        }
-
-        .text_container {
-            position: absolute;
-            top: 50%;
-            height: 20%;
-            width: 70%;
-            align-content: center;
-            text-align: center;
-            padding-bottom: 5%;
-
         }
 
 
-        .button_container {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            height: 30%;
-            width: 100%;
+    .text_container {
+        position: absolute;
+        top: 50%;
+        height: 20%;
+        width: 70%;
+        align-content: center;
+        text-align: center;
+        padding-bottom: 5%;
 
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+    }
 
-        .image_container img {
-            position: absolute;
-            display: inline-grid;
-            border-radius: 10px;
-            width: auto;
-            height: 90%;
-            top: 5%;
-            box-shadow: 0px 0px 10px 5px #285430;
-        }
 
-        .here_button, .spot_button {
-            background-color: #285430;
-            color: white;
-            height: 15%;
-            width: 30%;
-            border: none;
-            bottom: 30%;
-            border-radius: 5px;
-        }
+    .button_container {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 30%;
+        width: 100%;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+
+    .image_container img {
+        position: absolute;
+        display: inline-grid;
+        border-radius: 10px;
+        width: auto;
+        height: 90%;
+        top: 5%;
+        box-shadow: 0px 0px 10px 5px #285430;
+    }
+
+    .here_button, .spot_button {
+        background-color: #285430;
+        color: white;
+        height: 15%;
+        width: 30%;
+        border: none;
+        bottom: 30%;
+        border-radius: 5px;
+    }
 
 
         .here_button {
@@ -84,6 +123,58 @@
 
         .spot_button:disabled {
             color: grey;
+        }
+
+
+        div.stars {
+            width: 100%;
+            display: inline-block;
+        }
+
+        input.star {
+            display: none;
+        }
+
+        label.star {
+            float: right;
+            padding: 10px;
+            font-size: 36px;
+            color: #444;
+            transition: all .2s;
+        }
+
+        label.star.star-1 {
+            padding-right: 15%;
+        }
+
+        input.star:checked ~ label.star:before {
+            content: '\f005';
+            color: #FD4;
+            transition: all .25s;
+        }
+
+        input.star-1:checked ~ label.star:before {
+            color: #FE7;
+            text-shadow: 0 0 20px #952;
+        }
+
+        input.star-5:checked ~ label.star:before {
+            color: #F62;
+        }
+
+        label.star:hover {
+            transform: rotate(5deg) scale(1.3);
+        }
+
+        label.star:before {
+            content: '\f006';
+            font-family: FontAwesome;
+        }
+
+        .modal-dialog{
+            width: 96.5%;
+            height: 100%;
+            top: 25%;
         }
 
     </style>
@@ -126,6 +217,7 @@
             if (navigator.geolocation) {
                 navigator.geolocation.watchPosition(checkLocation, handleError); // Current GPS location data call
             } else { // if error
+                document.getElementById("here_button").disabled = true;
                 alert("Geolocation is not supported by this browser.");
             }
         }
@@ -171,25 +263,58 @@
 
 <!--- block that will add the body content into base.html --->
 {% block content %}
-    <div class="page_container">
-        <div class="image_container">
+<div class="page_container">
+    <div class="image_container">
             <img src="{{ file_path }}" class="image">
 
+    </div>
+    <div class="text_container">
+        <h1> {{ spot_name }}</h1>
+        {{ spot_description }}
+    </div>
+    <div class="button_container">
+        <div data-bs-toggle="modal" data-bs-target="#ratingModal">
+            <button class="here_button" id="here_button">I'm Here!</button>
         </div>
-        <div class="text_container">
-            <h1> {{ spot_name }}</h1>
-            {{ spot_description }}
-        </div>
-        <div class="button_container">
-            <button class="here_button" id="here_button" onclick="alert('You have arrived');">
-                I'm Here!
-            </button>
-
-            <button class="spot_button">
-                <a href="https://maps.google.com/?q={{ spot_latitude }},{{ spot_longitude }}"> Find Spot </a>
-            </button>
-
-        </div>
+        <button class="spot_button">
+            <a href="https://maps.google.com/?q={{ spot_latitude }},{{ spot_longitude }}"> Find Spot </a>
+        </button>
 
     </div>
+
+</div>
+
+<div class="modal fade" id="ratingModal" tabindex="1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Rate how clean the Spot of The Day is!</h5>
+            </div>
+            <form action={% url 'score' %} method="POST">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="container">
+                    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css">
+                    <div class="stars">
+                        <input class="star star-1" id="star-1" type="radio" name="star" value="5"/>
+                        <label class="star star-1" for="star-1"></label>
+                        <input class="star star-2" id="star-2" type="radio" name="star" value="4"/>
+                        <label class="star star-2" for="star-2"></label>
+                        <input class="star star-3" id="star-3" type="radio" name="star" value="3"/>
+                        <label class="star star-3" for="star-3"></label>
+                        <input class="star star-4" id="star-4" type="radio" name="star" value="2"/>
+                        <label class="star star-4" for="star-4"></label>
+                        <input class="star star-5" id="star-5" type="radio" name="star" value="1"/>
+                        <label class="star star-5" for="star-5"></label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-success">Rate</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 {% endblock %}

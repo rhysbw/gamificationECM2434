@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator, DecimalValidator
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 
 """
 Developer note:
@@ -8,6 +10,23 @@ When no field is explicitly defined as the primary key, Django automatically cre
 This has been used for every model, and thus there are no explicitly stated primary keys
 These primary keys can be referenced to with .pk if needed
 """
+
+# Validators
+def valid_time(time):
+    current_hour = time.hour
+    earliest_hour = 6  # This value indicates the earliest hour the user can submit a valid time
+    latest_hour = 18  # This value indicates the final hour within which a user can submit a valid time
+    if current_hour < earliest_hour:
+        raise ValidationError(
+            _('%(time)s is not after %(hour)s:00:00'),
+            params={'time':time,'hour':earliest_hour},
+        )
+    elif current_hour > latest_hour:
+        raise ValidationError(
+            _('%(time)s is not before %(hour)s:59:59'),
+            params={'time':time,'hour':latest_hour},
+        )
+
 
 # Create your models here.
 class UserInfo(models.Model):
@@ -73,6 +92,11 @@ class UserInfo(models.Model):
         choices=GROUP_CHOICES,
         null=True,
         blank=True,
+    )
+    lastSpotRegister = models.DateField(
+        help_text="The date this user last visited a spot",
+        blank=True,
+        null=True,
     )
 
     def __str__(self):
@@ -179,18 +203,18 @@ class Spot(models.Model):
         verbose_name_plural = "Spots"
 
 
-class SpotRegister(models.Model):
+class UserRegister(models.Model):
     """This table holds which users have attended which spot-instance (record of when a spot is the spot of the day). 
 
     Columns:
         uId (ForeignKey): The primary key for the user that has attended the spot. A user can attend multiple spots, and as such
             a user can be represented multiple times in the table
-        psaId (ForeignKey): The primary key of the spot-instance (previousSpotAttend). This is the spot and the day the spot was
+        srId (ForeignKey): The primary key of the spot-instance (previousSpotAttend). This is the spot and the day the spot was
             the spot of the day. Since multiple users can register at the same spot, this can be found multiple times in the table
 
     Functions:
         __str__(self): Defines how each record in the table is represented (E.g. dev attended the spot on 2023-03-01) 
-                                                                           (AKA uId.username attended the spot on psaId.spotDay))
+                                                                           (AKA uId.username attended the spot on srId.spotDay))
     
     Other:
         The meta class defines how information from this table is referred to in the admin screen (named for purpose of clarity)
@@ -202,22 +226,40 @@ class SpotRegister(models.Model):
         on_delete=models.CASCADE,
         help_text="This user has attended today's spot",
     )
-    psaId = models.ForeignKey(
-        'PreviousSpotAttend',
+    srId = models.ForeignKey(
+        'SpotRecord',
         on_delete=models.CASCADE,
         verbose_name="Spot data",
         help_text="Related spot-day instance"
     )
 
+    spotNiceness = models.PositiveSmallIntegerField(
+        help_text="The number of stars this user has rated the spot upon attendance (1 to 5)",
+        validators=[MaxValueValidator(5, message="Max rating is 5 stars"),
+                    MinValueValidator(1, message="Min rating is 1 star")],
+    )
+
+    registerTime = models.TimeField(
+        auto_now_add=True,
+        help_text="The time that the record is created. Note, this field cannot be edited, and is automatically created",
+        validators=[valid_time]
+    )
+
+    registerTimeEditable = models.TimeField(
+        null=True,
+        help_text="An admin, alterable time field for the purposes of testing. Can be null upon record creation",
+        validators=[valid_time]
+    )
+
     def __str__(self):
-        return str(self.uId.username) + " attended the spot on " + str(self.psaId.spotDay)
+        return str(self.uId.username) + " attended the spot on " + str(self.srId.spotDay) + " at " + " " + str(self.registerTime)
 
     class Meta:
         verbose_name_plural = "Register"
         verbose_name = "Entries"
 
 
-class PreviousSpotAttend(models.Model):
+class SpotRecord(models.Model):  # SpotRecord
     """This table holds each instance of a spot being the spot of the day 
 
     Columns:
@@ -255,3 +297,4 @@ class PreviousSpotAttend(models.Model):
     class Meta:
         verbose_name_plural = "Spot Record"
         verbose_name = "Spot Records"
+
