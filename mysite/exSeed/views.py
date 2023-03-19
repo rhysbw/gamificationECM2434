@@ -41,6 +41,33 @@ def position_buffer_calc(position, buffer, record, column_name, prev_pos_score):
     return new_pos, new_buf  # Gives the new position and buffer values back to the main code
 
 
+def streak_image(user_pk, imageType) -> str:
+    user = UserInfo.objects.get(user__pk=user_pk)
+    if imageType == "profile":
+        pictures = [
+            "https://i.imgur.com/ASOswDa.png",  # stage one
+            "https://i.imgur.com/KpWonCy.png",  # stage two
+            "https://i.imgur.com/uakyl0I.png",  # stage three
+            "https://i.imgur.com/D1xeyhK.png",  # stage four
+            "https://i.imgur.com/BrsRkPM.png"  # stage five and above
+        ]
+    elif imageType == "leaderboard":
+        pictures = [
+            "https://i.imgur.com/ASOswDa.png",  # stage one
+            "https://i.imgur.com/KpWonCy.png",  # stage two
+            "https://i.imgur.com/uakyl0I.png",  # stage three
+            "https://i.imgur.com/D1xeyhK.png",  # stage four
+            "https://i.imgur.com/BrsRkPM.png"  # stage five and above
+        ]
+    streak = user.currentStreak
+    if streak > 4:
+        streak = 5
+    elif streak == 0:
+        streak = 1
+
+    return pictures[streak - 1]
+
+
 # Create your views here.
 def signup(request):
     """
@@ -215,11 +242,13 @@ def home_page(request):
         SpotRecord(sId=spot, spotDay=today).save()
 
         # ADD STREAK STUFF HERE
+        '''
         yesterdaysRegister = UserInfo.objects.filter(~Q(lastSpotRegister=yesterday))
         yesterdaysRegister.update(currentStreak=0)
         for item in yesterdaysRegister:
             print("saving item ", item)
             item.save()
+        '''
     # Assigns the values of today's spot so they can be rendered into the website
     spot_name = spot.name
     image = spot.imageName
@@ -547,6 +576,17 @@ def addScore(request):
     if not request.user.is_authenticated:
         return redirect('/login')
 
+    today = datetime.date.today()
+    first_register = UserInfo.objects.filter(lastSpotRegister=today)
+    if len(first_register) == 0:
+        yesterday = today - datetime.timedelta(days=1)
+        yesterdaysRegister = UserInfo.objects.filter(~Q(lastSpotRegister=yesterday) & ~Q(lastSpotRegister=today))
+        yesterdaysRegister.update(currentStreak=0)
+        for item in yesterdaysRegister:
+            print("saving item ", item)
+            item.save()
+
+
     if request.method == "POST":
         user_spot_rating = int(request.POST.get('star'))
     else:
@@ -554,12 +594,13 @@ def addScore(request):
 
     now = datetime.datetime.now()
     nowTime = now.time()
+    #nowTime = datetime.time(12,12,12)  # Used only for the purpose of testing outside of allowed times (6am to 7pm)
     if nowTime.hour < 6 or nowTime.hour > 18:
         return render(request, 'error.html', {'error': 'time'})
 
     # Checks if there is a spot for today and if not returns the user to the home page (where one will be assigned)
     try:
-        spot = SpotRecord.objects.get(spotDay=datetime.date.today())
+        spot = SpotRecord.objects.get(spotDay=today)
     except:
         return redirect('/')
 
@@ -568,14 +609,14 @@ def addScore(request):
         # If there is no error in fetching this record then the current user has already registered
     except  :
         # Adds their score to the database
+        todays_registers = UserInfo.objects.filter(lastSpotRegister=today)
+        additional_points = 4 - len(todays_registers)
+        if additional_points < 0:
+            additional_points = 0
         info = UserInfo.objects.get(user_id=request.user.pk)
-        print(str(info.totalPoints) + "\n\n" + str(info.totalPoints + 1))
-        info.totalPoints = info.totalPoints + 1
-        print(str(info.totalPoints) + "\n")
-        print(str(info.currentStreak) + "\n\n" + str(info.currentStreak + 1))
+        info.totalPoints = info.totalPoints + 1 + additional_points
         info.currentStreak = info.currentStreak + 1
-        print(info.currentStreak)
-        info.lastSpotRegister = datetime.date.today()
+        info.lastSpotRegister = today
         spot.attendance = spot.attendance + 1
         UserRegister(uId=request.user, srId=spot, spotNiceness=user_spot_rating, registerTimeEditable=nowTime).save()
         spot.save()
