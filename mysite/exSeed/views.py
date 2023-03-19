@@ -41,6 +41,33 @@ def position_buffer_calc(position, buffer, record, column_name, prev_pos_score):
     return new_pos, new_buf  # Gives the new position and buffer values back to the main code
 
 
+def streak_image(user_pk, imageType) -> str:
+    user = UserInfo.objects.get(user__pk=user_pk)
+    if imageType == "profile":
+        pictures = [
+            "https://i.imgur.com/ASOswDa.png",  # stage one
+            "https://i.imgur.com/KpWonCy.png",  # stage two
+            "https://i.imgur.com/uakyl0I.png",  # stage three
+            "https://i.imgur.com/D1xeyhK.png",  # stage four
+            "https://i.imgur.com/BrsRkPM.png"  # stage five and above
+        ]
+    elif imageType == "leaderboard":
+        pictures = [
+            "https://i.imgur.com/ASOswDa.png",  # stage one
+            "https://i.imgur.com/KpWonCy.png",  # stage two
+            "https://i.imgur.com/uakyl0I.png",  # stage three
+            "https://i.imgur.com/D1xeyhK.png",  # stage four
+            "https://i.imgur.com/BrsRkPM.png"  # stage five and above
+        ]
+    streak = user.currentStreak
+    if streak > 4:
+        streak = 5
+    elif streak == 0:
+        streak = 1
+
+    return pictures[streak - 1]
+
+
 # Create your views here.
 def signup(request):
     """
@@ -459,9 +486,11 @@ def graph(request):
         else:
             background_colours.append("rgb(0,255,0)")
 
+    picture_name = streak_image(request.user.pk, "profile")
     page_contents = {
         "spot_data": averageStars,
         "colours": background_colours,
+        "pic": picture_name
     }
     return render(request, 'graph.html', page_contents)
 
@@ -565,14 +594,9 @@ def addScore(request):
         # If there is no error in fetching this record then the current user has already registered
     except  :
         # Adds their score to the database
-        print(request.user.pk)
         info = UserInfo.objects.get(user_id=request.user.pk)
-        print(str(info.totalPoints) + "\n\n" + str(info.totalPoints + 1))
         info.totalPoints = info.totalPoints + 1
-        print(str(info.totalPoints) + "\n")
-        print(str(info.currentStreak) + "\n\n" + str(info.currentStreak + 1))
         info.currentStreak = info.currentStreak + 1
-        print(info.currentStreak)
         info.lastSpotRegister = datetime.date.today()
         spot.attendance = spot.attendance + 1
         UserRegister(uId=request.user, srId=spot, spotNiceness=user_spot_rating, registerTimeEditable=nowTime).save()
