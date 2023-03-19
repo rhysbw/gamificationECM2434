@@ -4,65 +4,6 @@
 <!--- author Benjamin--->
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-    <title>Spot of The Day</title>
-
-  {% load static %}
-    <link rel="stylesheet" href="{% static 'bootstrap.min.css' %}">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Alatsi&amp;display=swap">
-    <link rel="stylesheet" href="{% static 'Navbar-Right-Links-icons.css' %}">
-
-    <style>
-    
-
-    </style>
-    {% block style %}{% endblock %}
-
-    <script>
-
-
-    </script>
-    {% block script %}{% endblock %}
-</head>
-
-<!--- Creates the navbar at the top the page --->
-<body class="align-items-center" style="background: rgb(225,224,184);">
-    <nav class="navbar navbar-light navbar-expand-md py-3">
-        <div class="container"><a class="navbar-brand d-flex align-items-center" href="/"><span class="bs-icon-sm bs-icon-rounded bs-icon-primary d-flex justify-content-center align-items-center me-2 bs-icon" style="background: #9f8772;"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-tree">
-                        <path d="M8.416.223a.5.5 0 0 0-.832 0l-3 4.5A.5.5 0 0 0 5 5.5h.098L3.076 8.735A.5.5 0 0 0 3.5 9.5h.191l-1.638 3.276a.5.5 0 0 0 .447.724H7V16h2v-2.5h4.5a.5.5 0 0 0 .447-.724L12.31 9.5h.191a.5.5 0 0 0 .424-.765L10.902 5.5H11a.5.5 0 0 0 .416-.777l-3-4.5zM6.437 4.758A.5.5 0 0 0 6 4.5h-.066L8 1.401 10.066 4.5H10a.5.5 0 0 0-.424.765L11.598 8.5H11.5a.5.5 0 0 0-.447.724L12.69 12.5H3.309l1.638-3.276A.5.5 0 0 0 4.5 8.5h-.098l2.022-3.235a.5.5 0 0 0 .013-.507z"></path>
-                    </svg></span><span class="fw-light" style="font-family: Alatsi, sans-serif;color: var(--bs-light);padding-right: 10px;">Spot of The Day</span></a><button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-2"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
-            <div class="collapse navbar-collapse" id="navcol-2">
-                <ul class="navbar-nav ms-auto">
-                    {% if user.is_authenticated %}
-                        <li class="nav-item"><a class="nav-link active" href="/">Home</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/leaderboard?q=streak">Leaderboard</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/profile">Profile</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/logout">Sign Out</a></li>
-                    {% else %}
-                        <li class="nav-item"><a class="nav-link" href="/login">Log In</a></li>
-                        <li class="nav-item"><a class="nav-link" href="/signup">Register</a></li>
-                    {% endif %}
-                </ul>
-            </div>
-        </div>
-    </nav>
-    <script src="{% static 'bootstrap.min.js' %}"></script>
-
-    <!--- creates a block where all other pages can put their content --->
-    {% block content %}
-
-    {% endblock %}
-    
-</body>
-
-</html>
-=======
-<!DOCTYPE html>
-<html lang="en" style="background: #e1e0b8;">
-
-<!--- author Benjamin--->
-<head>
-    <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <title>Spot of The Day</title> {% load static %}
