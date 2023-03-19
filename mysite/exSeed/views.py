@@ -256,11 +256,17 @@ def home_page(request):
     latitude = spot.latitude
     longitude = spot.longitude
 
+    average_stars, background_colours  = graph()
+
+
     page_contents = {'file_path': image,
                      'spot_name': spot_name,
                      'spot_description': description,
                      'spot_latitude': latitude,
-                     'spot_longitude': longitude}
+                     'spot_longitude': longitude,
+                     "spot_data": average_stars,
+                     "colours": background_colours
+                     }
 
     return render(request, 'home.html', page_contents)
 
@@ -452,7 +458,7 @@ def profile_page(request):
     }
     return render(request, 'profile.html', page_contents)
 
-def graph(request):
+def graph():
     # Gather all of today's niceness ratings
     spot_data = UserRegister.objects.filter(srId__spotDay=datetime.date.today()).order_by('registerTime')
     # If empty graph not wanted to be viewed, here is where we could check if spot_data had any contents and redirect
@@ -488,13 +494,8 @@ def graph(request):
         else:
             background_colours.append("rgb(0,255,0)")
 
-    picture_name = streak_image(request.user.pk, "profile")
-    page_contents = {
-        "spot_data": averageStars,
-        "colours": background_colours,
-        "pic": picture_name
-    }
-    return render(request, 'graph.html', page_contents)
+
+    return averageStars, background_colours
 
 def compass(request):
     user_agent = parse(request.META['HTTP_USER_AGENT'])
