@@ -549,8 +549,8 @@ def change_profile_picture(request):
 
     # Edits the user_info table to add the id of the new profile picture
     to_edit = UserInfo.objects.get(user_id=user)
-    new_avatar = Avatar.objects.get(avatarTitle=chosen_pfp)
-    to_edit.avatarId_id = new_avatar.imageName
+    new_avatar = Avatar.objects.get(imageName=chosen_pfp)
+    to_edit.avatarId_id = new_avatar.id
     to_edit.save()
 
     return redirect('/profile')
