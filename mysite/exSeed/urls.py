@@ -21,6 +21,7 @@ urlpatterns = [
     path("change_title/<title>", views.change_title, name="change_title"),
     path("pledge", views.pledge, name="pledge"),
     path("take_pledge", views.take_pledge, name="takePledge"),
-    path("privacy_policy", views.privacy_policy, name="privacy_policy")
+    path("privacy_policy", views.privacy_policy, name="privacy_policy"),
+    path('forgot-password/', views.forgot_password, name='forgot_password'),
 ]
 

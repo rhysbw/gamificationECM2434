@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import PasswordResetForm
 
 from .forms import SignupForm, ProfilePictureForm
 from .models import Spot, UserInfo, SpotRecord, Avatar, UserRegister
@@ -729,6 +730,19 @@ def get_streak_image(user_pk, imageType) -> str: # FUNCTION
 
 def privacy_policy(request):
     return render(request, 'privacy_policy.html')
+
+def forgot_password(request):
+    """
+    @author Owen G
+    """
+    if request.method == 'POST':
+        form = PasswordResetForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return render(request, 'password_reset_done.html')
+    else:
+        form = PasswordResetForm()
+    return render(request, 'forgot_password.html', {'form': form})
 
 
 titles_dictionary = {
