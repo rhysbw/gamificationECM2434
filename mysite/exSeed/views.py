@@ -731,6 +731,7 @@ def get_streak_image(user_pk, imageType) -> str: # FUNCTION
 def privacy_policy(request):
     return render(request, 'privacy_policy.html')
 
+
 def forgot_password(request):
     """
     @author Owen G
