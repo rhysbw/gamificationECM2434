@@ -500,12 +500,16 @@ def graph():
 
     background_colours = []
     for item in average_stars:
-        if item < 2:
-            background_colours.append("rgb(238,75,43)")
-        elif item < 3.5:
-            background_colours.append("#FF9900")
+        if item < 1:
+            background_colours.append("rgb(237,28,36)")  # Worst
+        elif item < 2:
+            background_colours.append("rgb(255,163,100)")  # Bad
+        elif item < 3:
+            background_colours.append("rgb(255,201,14)")  # Middle
+        elif item < 4:
+            background_colours.append("rgb(182,230,32)")  # Good
         else:
-            background_colours.append("rgb(0,255,0)")
+            background_colours.append("rgb(34,177,76)")  # Great
 
 
     return average_stars, background_colours

@@ -66,27 +66,30 @@ class UserInfo(models.Model):
         help_text="The title chosen by the user to represent them",
         max_length=100,
         blank=True,
-        # ! Don't know how we are dealing with this. Is this the actual title, or just a reference to a title
     )
     totalPoints = models.PositiveSmallIntegerField(
         help_text="The users high score",
         default=0,
         blank=True,
+        verbose_name="Points"
     )
     currentStreak = models.PositiveSmallIntegerField(
         help_text="The users current streak",
         default=0,
         blank=True,
         db_index=True,
+        verbose_name="Streak"
     )
     lastSpotRegister = models.DateField(
         help_text="The date this user last visited a spot",
         blank=True,
         null=True,
+        verbose_name="Last Register Date"
     )
     hasTakenPledge = models.BooleanField(
         help_text="Has the user agreed to the Spot of the Day pledge?",
-        default=False
+        default=False,
+        verbose_name="Pledged"
     )
 
     def __str__(self):
