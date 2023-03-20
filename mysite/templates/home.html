@@ -15,40 +15,40 @@
         }
 
         .flip-card {
-          background-color: transparent;
-          width: 33.75vh;
-          height: 45vh;
-          perspective: 1000px;
+            background-color: transparent;
+            width: 33.75vh;
+            height: 45vh;
+            perspective: 1000px;
         }
 
         .flip-card-inner {
-          position: relative;
-          width: 100%;
-          height: 100%;
-          text-align: center;
-          transition: transform 0.6s;
-          transform-style: preserve-3d;
-          box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
-          border-radius: 10px;
-          border: solid 1px green;
-          cursor: pointer;
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            border: solid 1px green;
+            cursor: pointer;
         }
 
         .flip-card-clicked .flip-card-inner {
-          transform: rotateY(180deg);
+            transform: rotateY(180deg);
         }
 
         .flip-card-front, .flip-card-back {
-          position: absolute;
-          width: 100%;
-          height: 100%;
-          -webkit-backface-visibility: hidden;
-          backface-visibility: hidden;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
         }
 
         .flip-card-front {
-          background-color: #bbb;
-          color: black;
+            background-color: #bbb;
+            color: black;
         }
 
         .flip-card-front img {
@@ -70,7 +70,7 @@
         }
 
         .flip-card-inner.active {
-          transform: rotateY(180deg);
+            transform: rotateY(180deg);
         }
 
         .image_container {
@@ -85,40 +85,39 @@
         }
 
 
-    .text_container {
-        position: absolute;
-        top: 50%;
-        height: 20%;
-        width: 90%;
-        align-content: center;
-        text-align: center;
-        padding-bottom: 5%;
+        .text_container {
+            position: absolute;
+            top: 50%;
+            height: 20%;
+            width: 90%;
+            align-content: center;
+            text-align: center;
+            padding-bottom: 5%;
 
-    }
+        }
 
-    .button_container {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        height: 30%;
-        width: 100%;
+        .button_container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 30%;
+            width: 100%;
 
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
 
-
-    .here_button, .spot_button {
-        background-color: #198754;
-        color: white;
-        height: 15%;
-        width: 30%;
-        border: none;
-        top: 10px;
-        border-radius: 5px;
-    }
+        .here_button, .spot_button {
+            background-color: #198754;
+            color: white;
+            height: 15%;
+            width: 30%;
+            border: none;
+            top: 10px;
+            border-radius: 5px;
+        }
 
         .here_button {
             position: absolute;
@@ -179,7 +178,7 @@
             font-family: FontAwesome;
         }
 
-        .modal-dialog{
+        .modal-dialog {
             width: 96.5%;
             height: 100%;
             top: 25%;
@@ -192,7 +191,7 @@
     <!-- author Benjamin and Rhys --->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-
+        document.getElementById("here_button").disabled = true;
         const targetLatitude = {{ spot_latitude }};
         const targetLongitude = {{ spot_longitude }};
         const maxDistance = 50; // Radius to be within of the spot
@@ -226,8 +225,7 @@
         function getLocation() {
             if (navigator.geolocation) {
                 navigator.geolocation.watchPosition(checkLocation, handleError); // Current GPS location data call
-            } else { // if error
-                document.getElementById("here_button").disabled = true;
+            } else { // if no geolocation
                 alert("Geolocation is not supported by this browser.");
             }
         }
@@ -243,6 +241,8 @@
                 document.getElementById("here_button").innerHTML = dist_out + 'm';
                 // Disable button from being pressed and adding points to leaderboard
                 document.getElementById("here_button").disabled = true;
+            } else {
+                document.getElementById("here_button").disabled = false;
             }
         }
 
@@ -268,67 +268,67 @@
         // Begins location script
         getLocation();
 
-        window.onload = function() {
-        document.getElementById('flip-card').addEventListener('click', function() {
-          this.classList.toggle('active');
-        });
+        window.onload = function () {
+            document.getElementById('flip-card').addEventListener('click', function () {
+                this.classList.toggle('active');
+            });
 
 
-        const ctx = document.getElementById('bar')
-        const labels = ['6:00','7:00','8:00','9:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00']
-        const dataValues = [3.5,4.2,3.3,2.5,1.3,1.2,2.1,2.6,3.6,3.9,4.3]
-        const bar_ctx = document.getElementById('bar').getContext('2d')
-        const background_1 = bar_ctx.createLinearGradient(0,0,0,350);
-        background_1.addColorStop(0.15, 'rgb(25,135,84)');
-        //background_1.addColorStop(0.4, 'orange');
-        background_1.addColorStop(0.85, '#EE6055');
+            const ctx = document.getElementById('bar')
+            const labels = ['6:00', '7:00', '8:00', '9:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00']
+            const dataValues = [3.5, 4.2, 3.3, 2.5, 1.3, 1.2, 2.1, 2.6, 3.6, 3.9, 4.3]
+            const bar_ctx = document.getElementById('bar').getContext('2d')
+            const background_1 = bar_ctx.createLinearGradient(0, 0, 0, 350);
+            background_1.addColorStop(0.15, 'rgb(25,135,84)');
+            //background_1.addColorStop(0.4, 'orange');
+            background_1.addColorStop(0.85, '#EE6055');
 
-        new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Star rating throughout the day',
-                data: {{ spot_data }},
-                barPercentage: 1.25,
-                backgroundColor:  {{ colours|safe }},
-                borderWidth: 1,
-            }]
-        },
-        options: {
-            plugins: {
-                legend: {
-                    display: false,
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Star rating throughout the day',
+                        data: {{ spot_data }},
+                        barPercentage: 1.25,
+                        backgroundColor:  {{ colours|safe }},
+                        borderWidth: 1,
+                    }]
                 },
-                tooltips: {
-                    enabled: false,
+                options: {
+                    plugins: {
+                        legend: {
+                            display: false,
+                        },
+                        tooltips: {
+                            enabled: false,
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                text: "Stars",
+                                display: true,
+                            },
+                            max: 5,
+                            grid: {
+                                display: false,
+                            }
+                        },
+                        x: {
+                            title: {
+                                text: "Time",
+                                display: true,
+                            },
+                            grid: {
+                                display: false,
+                            }
+                        },
+                    }
                 }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        text: "Stars",
-                        display: true,
-                    },
-                    max: 5,
-                    grid: {
-                        display: false,
-                    }
-                },
-                x: {
-                    title: {
-                        text: "Time",
-                        display: true,
-                    },
-                    grid: {
-                        display: false,
-                    }
-                },
-            }
-        }
-    });
-    };
+            });
+        };
 
 
     </script>
@@ -341,67 +341,69 @@
 
 <!--- block that will add the body content into base.html --->
 {% block content %}
-<div class="page_container">
-    <div class="image_container">
+    <div class="page_container">
+        <div class="image_container">
             <div class="flip-card">
-              <div class="flip-card-inner" id="flip-card">
-                <div class="flip-card-front">
-                    <img src="{{ file_path }}">
-                </div>
-                <div class="flip-card-back">
-                  <canvas id="bar" style="width:100%;height:100%;background-color:white;"></canvas>
-                </div>
-              </div>
-            </div>
-
-    </div>
-    <div class="text_container">
-        <h1> {{ spot_name }}</h1>
-        {{ spot_description }}
-    </div>
-    <div class="button_container">
-        <div data-bs-toggle="modal" data-bs-target="#ratingModal">
-            <button class="here_button" id="here_button">I'm Here!</button>
-        </div>
-        <button class="spot_button" onclick="window.location.href='/compass'">
-            Find Spot
-        </button>
-
-    </div>
-
-</div>
-
-<div class="modal fade" id="ratingModal" tabindex="1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Rate how clean the Spot of The Day is!</h5>
-            </div>
-            <form action={% url 'score' %} method="POST">
-            {% csrf_token %}
-            <div class="modal-body">
-                <div class="container">
-                    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css">
-                    <div class="stars">
-                        <input class="star star-1" id="star-1" type="radio" name="star" value="5" required="required"/>
-                        <label class="star star-1" for="star-1"></label>
-                        <input class="star star-2" id="star-2" type="radio" name="star" value="4"/>
-                        <label class="star star-2" for="star-2"></label>
-                        <input class="star star-3" id="star-3" type="radio" name="star" value="3"/>
-                        <label class="star star-3" for="star-3"></label>
-                        <input class="star star-4" id="star-4" type="radio" name="star" value="2"/>
-                        <label class="star star-4" for="star-4"></label>
-                        <input class="star star-5" id="star-5" type="radio" name="star" value="1"/>
-                        <label class="star star-5" for="star-5"></label>
+                <div class="flip-card-inner" id="flip-card">
+                    <div class="flip-card-front">
+                        <img src="{{ file_path }}">
+                    </div>
+                    <div class="flip-card-back">
+                        <canvas id="bar" style="width:100%;height:100%;background-color:white;"></canvas>
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="submit" class="btn btn-success">Rate</button>
+
+        </div>
+        <div class="text_container">
+            <h1> {{ spot_name }}</h1>
+            {{ spot_description }}
+        </div>
+        <div class="button_container">
+            <div data-bs-toggle="modal" data-bs-target="#ratingModal">
+                <button class="here_button" id="here_button">I'm Here!</button>
             </div>
-            </form>
+            <button class="spot_button" onclick="window.location.href='/compass'">
+                Find Spot
+            </button>
+
+        </div>
+
+    </div>
+
+    <div class="modal fade" id="ratingModal" tabindex="1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Rate how clean the Spot of The Day is!</h5>
+                </div>
+                <form action={% url 'score' %} method="POST">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="container">
+                            <link rel="stylesheet"
+                                  href="//netdna.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css">
+                            <div class="stars">
+                                <input class="star star-1" id="star-1" type="radio" name="star" value="5"
+                                       required="required"/>
+                                <label class="star star-1" for="star-1"></label>
+                                <input class="star star-2" id="star-2" type="radio" name="star" value="4"/>
+                                <label class="star star-2" for="star-2"></label>
+                                <input class="star star-3" id="star-3" type="radio" name="star" value="3"/>
+                                <label class="star star-3" for="star-3"></label>
+                                <input class="star star-4" id="star-4" type="radio" name="star" value="2"/>
+                                <label class="star star-4" for="star-4"></label>
+                                <input class="star star-5" id="star-5" type="radio" name="star" value="1"/>
+                                <label class="star star-5" for="star-5"></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success">Rate</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-</div>
 
 {% endblock %}
