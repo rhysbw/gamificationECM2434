@@ -669,6 +669,10 @@ def get_streak_image(user_pk, imageType) -> str:
     return pictures[streak - 1]
 
 
+def privacy_policy(request):
+    return render(request, 'privacy_policy.html')
+
+
 titles_dictionary = {
   "titles": [
     "Captain Compost",
