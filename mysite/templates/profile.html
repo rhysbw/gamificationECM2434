@@ -132,6 +132,10 @@ number_of_avatars: The length of the avatars list
       outline: 2px solid black;
     }
 
+    .container button.btn-success{
+        float: right;
+    }
+
     @media (max-width: 500px) {
     .dropdown-menu{
         height:250px;
@@ -181,23 +185,25 @@ number_of_avatars: The length of the avatars list
 <div class="modal fade" id="editProfileModal" tabindex="1" role="dialog" aria-hidden="true" >
   <div class="modal-dialog" role="document">
     <div class="modal-content">
+        <form action="/change_profile_picture" method="post">
+          {% csrf_token %}
       <div class="modal-body">
-          <div class="container">
-              <form action="/change_profile_picture" method="post">
-              <div class="image-grid-container">
-                  {% for avatar in avatars %}
-                        <label>
-                          <input type="radio" name="chosen_pfp" value="{{ avatar.0 }}">
-                          <img src="{{ avatar.0 }}}">
-                        </label>
-                  {% endfor %}
-              </div>
-                  <button type="button" class="btn btn-warning" data-bs-dismiss="modal">Close</button>
-                  {% csrf_token %}
-            <button type="submit" class="btn btn-success">Save changes</button>
-            </form>
+          <div class="image-grid-container">
+              {% for avatar in avatars %}
+                    <label>
+                      <input type="radio" name="chosen_pfp" value="{{ avatar.0 }}">
+                      <img src="{{ avatar.0 }}}">
+                    </label>
+              {% endfor %}
           </div>
       </div>
+      <div class="modal-footer">
+          <div class="container">
+        <button type="button" class="btn btn-warning" data-bs-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-success">Save changes</button>
+          </div>
+      </div>
+      </form>
     </div>
   </div>
 </div>
