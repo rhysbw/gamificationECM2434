@@ -192,7 +192,6 @@
     <!-- author Benjamin and Rhys --->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-
         const targetLatitude = {{ spot_latitude }};
         const targetLongitude = {{ spot_longitude }};
         const maxDistance = 50; // Radius to be within of the spot
@@ -243,6 +242,9 @@
                 document.getElementById("here_button").innerHTML = dist_out + 'm';
                 // Disable button from being pressed and adding points to leaderboard
                 document.getElementById("here_button").disabled = true;
+            } else {
+                document.getElementById("here_button").innerHTML = "I'm here!";
+                document.getElementById("here_button").disabled = false;
             }
         }
 
