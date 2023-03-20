@@ -10,6 +10,21 @@
     </style>
 {% endblock %}
 
+{% block script %}
+    <script>
+        function isChecked() {
+            var button = document.getElementById("submit_btn");
+            var checkbox = document.getElementById("agree")
+
+            if (checkbox.checked === true) {
+                button.disabled = "";
+            } else {
+                button.disabled = "disabled";
+            }
+        }
+    </script>
+{% endblock script %}
+
 {% block content %}
     <div class="text-center" id="space">
         <h1><u>Welcome to Spot of the Day!</u></h1>
@@ -19,9 +34,9 @@
     <p>By clicking the button below, you agree to be a guardian for the spots you visit during your time playing Spot of the Day, so that everyone playing has the best experience possible.</p>
         <form action={% url 'takePledge' %} method="POST">
             {% csrf_token %}
-        <input type="radio" name="pledge" required="required" id="agree">
+        <input class="form-check-input" type="checkbox" name="pledge" required="required" id="agree" onchange="isChecked()">
         <label for="agree">I agree to take care of all spots I visit</label><br><br>
-        <button type="submit" class="btn btn-success">I take the SotD pledge</button>
+        <button type="submit" id="submit_btn" class="btn btn-success" disabled="disabled">I take the SotD pledge</button>
     </form>
     </div>
 {% endblock %}
