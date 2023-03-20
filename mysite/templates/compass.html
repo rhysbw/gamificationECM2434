@@ -57,7 +57,6 @@
 
 {% block script %}
     <script>
-        const maxDistance = 50; // Radius to be within of the spot
         // Needing extra permissions as of IOS
         const isIOS =
             navigator.userAgent.match(/(iPod|iPhone|iPad)/) &&
@@ -150,11 +149,10 @@
             const {latitude, longitude} = position.coords; // user location
             pointDegree = calcDegreeToPoint(latitude, longitude);
             dist = distance(latitude, longitude, {{ spot_lat }}, {{ spot_long }});
-            if (dist_out > maxDistance) {
-                // Set button to show distance away from spot
-                document.getElementById("testing").innerHTML = dist + 'm';
-            } else {
-                document.getElementById("testing").innerHTML = "I'm Here!";
+            if (dist < 50){
+                            document.getElementById("testing").innerHTML = dist + 'm'; // shows distance to spot
+            }else{
+                document.getElementById("testing").innerHTML = "You've arrived"; // shows distance to spot
             }
 
             if (pointDegree < 0) {
