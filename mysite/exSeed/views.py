@@ -41,7 +41,7 @@ def position_buffer_calc(position, buffer, record, column_name, prev_pos_score):
     return new_pos, new_buf  # Gives the new position and buffer values back to the main code
 
 
-def streak_image(user_pk, imageType) -> str:
+def get_streak_image(user_pk, imageType) -> str:
     user = UserInfo.objects.get(user__pk=user_pk)
     if imageType == "profile":
         pictures = [
@@ -112,7 +112,7 @@ def signup(request):
 
             user = authenticate(username=account_username, password=raw_password)
             login(request, user)
-            return redirect('home')
+            return redirect('pledge')
     else:
         form = SignupForm()
     return render(request, 'signup.html', {"register_form": form})
@@ -242,11 +242,13 @@ def home_page(request):
         SpotRecord(sId=spot, spotDay=today).save()
 
         # ADD STREAK STUFF HERE
+        '''
         yesterdaysRegister = UserInfo.objects.filter(~Q(lastSpotRegister=yesterday))
         yesterdaysRegister.update(currentStreak=0)
         for item in yesterdaysRegister:
             print("saving item ", item)
             item.save()
+        '''
     # Assigns the values of today's spot so they can be rendered into the website
     spot_name = spot.name
     image = spot.imageName
@@ -254,11 +256,17 @@ def home_page(request):
     latitude = spot.latitude
     longitude = spot.longitude
 
+    average_stars, background_colours  = graph()
+
+
     page_contents = {'file_path': image,
                      'spot_name': spot_name,
                      'spot_description': description,
                      'spot_latitude': latitude,
-                     'spot_longitude': longitude}
+                     'spot_longitude': longitude,
+                     "spot_data": average_stars,
+                     "colours": background_colours
+                     }
 
     return render(request, 'home.html', page_contents)
 
@@ -396,9 +404,11 @@ def leaderboard(request):
     # If any of these states are true, dots are not needed in the leaderboard. This data is passed to the html 
     no_dots = user_in_top_five or user_in_top_seven or user_position is None
     # Library for all data needed in the leaderboard
-    pageContent = {'rankings': rank_and_rec, 'currentUser': user, 'noDots': no_dots,
-                   'extra': additional_rankings, 'position': user_position}
-
+    pageContent = {'rankings': rank_and_rec,
+                   'currentUser': user,
+                   'noDots': no_dots,
+                   'extra': additional_rankings,
+                   'position': user_position}
     return render(request, 'leaderboard.html', pageContent)
 
 
@@ -441,21 +451,24 @@ def profile_page(request):
     profile_image = Avatar.objects.get(id=profile_id).imageName
     all_avatars_ref = Avatar.objects.values_list('imageName')
     all_avatars = list(all_avatars_ref)
+
+    streak_image = get_streak_image(user, 'profile')
     page_contents = {
         "streak": streak,
         "title": title,
         "titles": titles_dictionary['titles'],
         "profileImage": profile_image,
         "avatars": all_avatars,
+        "streak_image": streak_image
     }
     return render(request, 'profile.html', page_contents)
 
-def graph(request):
+def graph():
     # Gather all of today's niceness ratings
     spot_data = UserRegister.objects.filter(srId__spotDay=datetime.date.today()).order_by('registerTime')
     # If empty graph not wanted to be viewed, here is where we could check if spot_data had any contents and redirect
     # Array of all average values where index 0 = 6:00 and index 12 is 18:00
-    averageStars = [0,0,0,0,0,0,0,0,0,0,0,0,0]
+    average_stars = [0,0,0,0,0,0,0,0,0,0,0,0,0]
     raw_register = []  # This stores hour and score for each item in the db
     previous_hour = -1
     hour_total = 0
@@ -466,19 +479,19 @@ def graph(request):
             hour_total += record.spotNiceness
             records_in_hour += 1
         else:
-            averageStars[previous_hour - 6] = float(hour_total) / records_in_hour
+            average_stars[previous_hour - 6] = float(hour_total) / records_in_hour
             hour_total = record.spotNiceness
             records_in_hour = 1
         previous_hour = hour
     try:
-        averageStars[previous_hour - 6] = float(hour_total) / records_in_hour  # Makes sure the final value is added
+        average_stars[previous_hour - 6] = float(hour_total) / records_in_hour  # Makes sure the final value is added
     except IndexError:
         pass  # Avoids previous_hour calling an index that is not present (aka -7)
     except ZeroDivisionError:
         pass  # Avoids zero division when no records are returned to spot_data
 
     background_colours = []
-    for item in averageStars:
+    for item in average_stars:
         if item < 2:
             background_colours.append("rgb(238,75,43)")
         elif item < 3.5:
@@ -486,13 +499,8 @@ def graph(request):
         else:
             background_colours.append("rgb(0,255,0)")
 
-    picture_name = streak_image(request.user.pk, "profile")
-    page_contents = {
-        "spot_data": averageStars,
-        "colours": background_colours,
-        "pic": picture_name
-    }
-    return render(request, 'graph.html', page_contents)
+
+    return average_stars, background_colours
 
 def compass(request):
     user_agent = parse(request.META['HTTP_USER_AGENT'])
@@ -573,6 +581,17 @@ def addScore(request):
     if not request.user.is_authenticated:
         return redirect('/login')
 
+    today = datetime.date.today()
+    first_register = UserInfo.objects.filter(lastSpotRegister=today)
+    if len(first_register) == 0:
+        yesterday = today - datetime.timedelta(days=1)
+        yesterdaysRegister = UserInfo.objects.filter(~Q(lastSpotRegister=yesterday) & ~Q(lastSpotRegister=today))
+        yesterdaysRegister.update(currentStreak=0)
+        for item in yesterdaysRegister:
+            print("saving item ", item)
+            item.save()
+
+
     if request.method == "POST":
         user_spot_rating = int(request.POST.get('star'))
     else:
@@ -580,12 +599,13 @@ def addScore(request):
 
     now = datetime.datetime.now()
     nowTime = now.time()
+    #nowTime = datetime.time(12,12,12)  # Used only for the purpose of testing outside of allowed times (6am to 7pm)
     if nowTime.hour < 6 or nowTime.hour > 18:
         return render(request, 'error.html', {'error': 'time'})
 
     # Checks if there is a spot for today and if not returns the user to the home page (where one will be assigned)
     try:
-        spot = SpotRecord.objects.get(spotDay=datetime.date.today())
+        spot = SpotRecord.objects.get(spotDay=today)
     except:
         return redirect('/')
 
@@ -594,10 +614,14 @@ def addScore(request):
         # If there is no error in fetching this record then the current user has already registered
     except  :
         # Adds their score to the database
+        todays_registers = UserInfo.objects.filter(lastSpotRegister=today)
+        additional_points = 4 - len(todays_registers)
+        if additional_points < 0:
+            additional_points = 0
         info = UserInfo.objects.get(user_id=request.user.pk)
-        info.totalPoints = info.totalPoints + 1
+        info.totalPoints = info.totalPoints + 1 + additional_points
         info.currentStreak = info.currentStreak + 1
-        info.lastSpotRegister = datetime.date.today()
+        info.lastSpotRegister = today
         spot.attendance = spot.attendance + 1
         UserRegister(uId=request.user, srId=spot, spotNiceness=user_spot_rating, registerTimeEditable=nowTime).save()
         spot.save()
@@ -621,6 +645,9 @@ def change_title(request, title):
     info.title = title
     info.save()
     return redirect('/profile')
+
+def pledge(request):
+    return render(request, 'pledge.html')
 
 
 
