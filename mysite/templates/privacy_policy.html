@@ -1,5 +1,24 @@
 {% extends 'base.html' %}
 
+{% block script %}
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        /* USE THIS LATER WHEN RENDERING THE PRIVACY POLICY
+            THIS CODE HAS NOT BEEN TESTED
+      fetch("/pages-site/markdown.md")      // The path to the raw Markdown file
+        .then(response => response.blob())  // Unwrap to a blob...
+        .then(blob => blob.text())          // ...then to raw text...
+        .then(markdown => {                 // ...then pass the raw text into marked.parse
+          document.getElementById("content").innerHTML = marked.parse(markdown);
+        });
+
+         */
+    </script>
+{% endblock script %}
+
+
 {% block content %}
+<div id="content"></div>
 <p>Privacy Policy</p>
 {% endblock content %}
