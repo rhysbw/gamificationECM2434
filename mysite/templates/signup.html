@@ -1,9 +1,40 @@
 {% extends "base.html" %}
 <!-- author Sam Tebbet -->
 
+{% block script %}
+    <script>
+        // Function enables the button if the pledge is accepted
+        function isChecked() {
+            var button = document.getElementById("submit_btn");
+            var checkbox = document.getElementById("agree")
+
+            if (checkbox.checked === true) {
+                button.disabled = "";
+            } else {
+                button.disabled = "disabled";
+            }
+        }
+    </script>
+{% endblock script %}
+
+
+{% block style %}
+	<style>
+		.item {
+			white-space: nowrap;
+			display:inline-block;
+		}
+		.item label{
+			padding-left: 5px;
+		}
+	</style>
+{% endblock style %}
+
 <!-- block that will add the body content into base.html --->
 {% block content %}
 {% load crispy_forms_tags %}
+
+
 
 <!--Register-->
 <div class="container py-5">
@@ -11,7 +42,15 @@
 	<form method="POST">
 		{% csrf_token %}
 		{{ register_form|crispy }}
-		<button class="btn btn-primary" type="submit">Register</button>
+		<div class="form-check">
+			<input class="form-check-input" type="checkbox" name="accept_policy" required="required" id="agree" onchange="isChecked()">
+        	<label class="form-check-label" for="agree">
+				I have read and agree to Spot of the Day's <a href="/privacy_policy">Privacy Policy</a>
+			</label>
+			<br><br>
+		</div>
+
+		<button class="btn btn-primary" type="submit" id="submit_btn" disabled="disabled">Register</button>
 	</form>
 	<p class="text-center">If you already have an account, <a href="/login">login</a> instead.</p>
 </div>
