@@ -14,7 +14,7 @@ import datetime
 import json
 
 
-def position_buffer_calc(position, buffer, record, column_name, prev_pos_score):
+def position_buffer_calc(position, buffer, record, column_name, prev_pos_score):  # FUNCTION
     """Determines if there are any repeated score values that deserve repeated ranks
 
     Args:
@@ -41,7 +41,7 @@ def position_buffer_calc(position, buffer, record, column_name, prev_pos_score):
     return new_pos, new_buf  # Gives the new position and buffer values back to the main code
 
 
-def streak_image(user_pk, imageType) -> str:
+def streak_image(user_pk, imageType) -> str:  # FUNCTION
     user = UserInfo.objects.get(user__pk=user_pk)
     if imageType == "profile":
         pictures = [
@@ -216,6 +216,8 @@ def home_page(request):
     if not request.user.is_authenticated:
         return redirect('/login')
 
+    if not UserInfo.objects.get(user__pk=request.user.pk).hasTakenPledge:
+        return redirect('/pledge')
     # Find the date of today
     today = datetime.date.today()
 
@@ -303,6 +305,9 @@ def leaderboard(request):
     # to the login page
     if not request.user.is_authenticated:
         return redirect('/login')
+
+    if not UserInfo.objects.get(user__pk=request.user.pk).hasTakenPledge:
+        return redirect('/pledge')
 
     # This block determines which sort of leaderboard is desired (streak or overall points)
     # The 'other' variable ensures that records are ordered by the not-selected score after initial ordering
@@ -440,6 +445,9 @@ def profile_page(request):
     if not request.user.is_authenticated:
         return redirect('/login')
 
+    if not UserInfo.objects.get(user__pk=request.user.pk).hasTakenPledge:
+        return redirect('/pledge')
+
     # Takes the users information from the user and UserInfo table to be assigned to the page_contents variables.
     user = request.user.pk
     user_info = UserInfo.objects.filter(user_id=user).values()
@@ -506,6 +514,9 @@ def compass(request):
     # to the login page
     if not request.user.is_authenticated:
         return redirect('/login')
+
+    if not UserInfo.objects.get(user__pk=request.user.pk).hasTakenPledge:
+        return redirect('/pledge')
 
     # Find the date of today
     today = datetime.date.today()
@@ -579,6 +590,8 @@ def addScore(request):
     today = datetime.date.today()
     first_register = UserInfo.objects.filter(lastSpotRegister=today)
     if len(first_register) == 0:
+        print("ENTERED THIS SECTION --------------------------")
+        # This code resets anyone's streak who did not attend the spot yesterday
         yesterday = today - datetime.timedelta(days=1)
         yesterdaysRegister = UserInfo.objects.filter(~Q(lastSpotRegister=yesterday) & ~Q(lastSpotRegister=today))
         yesterdaysRegister.update(currentStreak=0)
@@ -586,6 +599,17 @@ def addScore(request):
             print("saving item ", item)
             item.save()
 
+        # This code works out the average spot attendance value
+        prev_spot = SpotRecord.objects.get(spotDay=yesterday)
+        total_spot_times = len(SpotRecord.objects.filter(sId=prev_spot.sId))
+        spot = Spot.objects.get(pk=prev_spot.sId.pk)
+        if total_spot_times == 1:
+            spot.average_attendance = prev_spot.attendance
+        else:
+            total_attendance = spot.average_attendance * (total_spot_times - 1)
+            total_attendance += prev_spot.attendance
+            spot.average_attendance = total_attendance / total_spot_times
+        spot.save()
 
     if request.method == "POST":
         user_spot_rating = int(request.POST.get('star'))
@@ -643,6 +667,13 @@ def change_title(request, title):
 
 def pledge(request):
     return render(request, 'pledge.html')
+
+def take_pledge(request):
+    if request.method == "POST":
+        info = UserInfo.objects.get(user__pk=request.user.pk)
+        info.hasTakenPledge = True
+        info.save()
+    return redirect('/')
 
 
 

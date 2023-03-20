@@ -79,24 +79,14 @@ class UserInfo(models.Model):
         blank=True,
         db_index=True,
     )
-    # Group options
-    GREEN = "GR"
-    YELLOW = "YW"
-    BLUE = "BL"
-    RED = "RD"
-    GROUP_CHOICES = [(GREEN, "Green"), (YELLOW, "Yellow"), (BLUE, "Blue"), (RED, "Red")]
-    #
-    group = models.CharField(
-        help_text="The user's group affiliation",
-        max_length=2,
-        choices=GROUP_CHOICES,
-        null=True,
-        blank=True,
-    )
     lastSpotRegister = models.DateField(
         help_text="The date this user last visited a spot",
         blank=True,
         null=True,
+    )
+    hasTakenPledge = models.BooleanField(
+        help_text="Has the user agreed to the Spot of the Day pledge?",
+        default=False
     )
 
     def __str__(self):
@@ -132,7 +122,7 @@ class Avatar(models.Model):
     )
 
     def __str__(self):
-        return self.imageName
+        return self.avatarTitle
 
 
 class Spot(models.Model):
@@ -184,7 +174,7 @@ class Spot(models.Model):
                     MinValueValidator(-180.0, message="Longitude is too low (Min -180)"),
                     DecimalValidator(9, 6)],
     )
-    average_attendance_int = models.PositiveSmallIntegerField(  # This field supports a max value of 32767
+    average_attendance = models.PositiveSmallIntegerField(  # This field supports a max value of 32767
         help_text="The average whole number of users that come to this spot when it is spot of the day",
         default=0,
         #db_index=True,  # This may be an important value through which to judge spots
@@ -252,7 +242,9 @@ class UserRegister(models.Model):
     )
 
     def __str__(self):
-        return str(self.uId.username) + " attended the spot on " + str(self.srId.spotDay) + " at " + " " + str(self.registerTime)
+        formatted_date = self.srId.spotDay.strftime("%d %B")
+        formatted_time = self.registerTime.strftime("%H:%M:%S")
+        return str(self.uId.username) + " attended spot on " + str(formatted_date) + " at " + " " + str(formatted_time)
 
     class Meta:
         verbose_name_plural = "Register"
@@ -292,9 +284,9 @@ class SpotRecord(models.Model):  # SpotRecord
     )
 
     def __str__(self):
-        return str(self.spotDay) + " " + self.sId.name
+        formatted_date = self.spotDay.strftime("%d %B")
+        return str(formatted_date) + " - " + self.sId.name
 
     class Meta:
         verbose_name_plural = "Spot Record"
         verbose_name = "Spot Records"
-
