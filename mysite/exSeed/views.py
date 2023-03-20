@@ -41,7 +41,7 @@ def position_buffer_calc(position, buffer, record, column_name, prev_pos_score):
     return new_pos, new_buf  # Gives the new position and buffer values back to the main code
 
 
-def streak_image(user_pk, imageType) -> str:  # FUNCTION
+def get_streak_image(user_pk, imageType) -> str:
     user = UserInfo.objects.get(user__pk=user_pk)
     if imageType == "profile":
         pictures = [
@@ -409,9 +409,11 @@ def leaderboard(request):
     # If any of these states are true, dots are not needed in the leaderboard. This data is passed to the html 
     no_dots = user_in_top_five or user_in_top_seven or user_position is None
     # Library for all data needed in the leaderboard
-    pageContent = {'rankings': rank_and_rec, 'currentUser': user, 'noDots': no_dots,
-                   'extra': additional_rankings, 'position': user_position}
-
+    pageContent = {'rankings': rank_and_rec,
+                   'currentUser': user,
+                   'noDots': no_dots,
+                   'extra': additional_rankings,
+                   'position': user_position}
     return render(request, 'leaderboard.html', pageContent)
 
 
@@ -457,12 +459,15 @@ def profile_page(request):
     profile_image = Avatar.objects.get(id=profile_id).imageName
     all_avatars_ref = Avatar.objects.values_list('imageName')
     all_avatars = list(all_avatars_ref)
+
+    streak_image = get_streak_image(user, 'profile')
     page_contents = {
         "streak": streak,
         "title": title,
         "titles": titles_dictionary['titles'],
         "profileImage": profile_image,
         "avatars": all_avatars,
+        "streak_image": streak_image
     }
     return render(request, 'profile.html', page_contents)
 
@@ -471,7 +476,7 @@ def graph():
     spot_data = UserRegister.objects.filter(srId__spotDay=datetime.date.today()).order_by('registerTime')
     # If empty graph not wanted to be viewed, here is where we could check if spot_data had any contents and redirect
     # Array of all average values where index 0 = 6:00 and index 12 is 18:00
-    averageStars = [0,0,0,0,0,0,0,0,0,0,0,0,0]
+    average_stars = [0,0,0,0,0,0,0,0,0,0,0,0,0]
     raw_register = []  # This stores hour and score for each item in the db
     previous_hour = -1
     hour_total = 0
@@ -482,19 +487,19 @@ def graph():
             hour_total += record.spotNiceness
             records_in_hour += 1
         else:
-            averageStars[previous_hour - 6] = float(hour_total) / records_in_hour
+            average_stars[previous_hour - 6] = float(hour_total) / records_in_hour
             hour_total = record.spotNiceness
             records_in_hour = 1
         previous_hour = hour
     try:
-        averageStars[previous_hour - 6] = float(hour_total) / records_in_hour  # Makes sure the final value is added
+        average_stars[previous_hour - 6] = float(hour_total) / records_in_hour  # Makes sure the final value is added
     except IndexError:
         pass  # Avoids previous_hour calling an index that is not present (aka -7)
     except ZeroDivisionError:
         pass  # Avoids zero division when no records are returned to spot_data
 
     background_colours = []
-    for item in averageStars:
+    for item in average_stars:
         if item < 2:
             background_colours.append("rgb(238,75,43)")
         elif item < 3.5:
@@ -503,7 +508,7 @@ def graph():
             background_colours.append("rgb(0,255,0)")
 
 
-    return averageStars, background_colours
+    return average_stars, background_colours
 
 def compass(request):
     user_agent = parse(request.META['HTTP_USER_AGENT'])
@@ -590,8 +595,6 @@ def addScore(request):
     today = datetime.date.today()
     first_register = UserInfo.objects.filter(lastSpotRegister=today)
     if len(first_register) == 0:
-        print("ENTERED THIS SECTION --------------------------")
-        # This code resets anyone's streak who did not attend the spot yesterday
         yesterday = today - datetime.timedelta(days=1)
         yesterdaysRegister = UserInfo.objects.filter(~Q(lastSpotRegister=yesterday) & ~Q(lastSpotRegister=today))
         yesterdaysRegister.update(currentStreak=0)

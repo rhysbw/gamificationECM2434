@@ -33,10 +33,6 @@
             display: block;
         }
 
-        .start-btn {
-            margin-top: 50%;
-            margin-bottom: auto;
-        }
 
     </style>
 {% endblock %}
@@ -45,13 +41,19 @@
 
 {% block content %}
     <div class="page_container">
-        <div class="compass" id="compass">
+        <div class="compass" id="compass" onclick="init()">
             <img src="https://i.imgur.com/jpxEmwB.png" id="line">
             <div class="my-point" id="my-point"></div>
         </div>
 
         <!-- TODO: remove -->
-        <button class="start-btn" onclick="init()">start</button>
+
+
+        <button class="btn btn-success"
+                onclick="window.location.href='https://maps.google.com/?q={{ spot_lat }},{{ spot_long }}'"
+                style="margin-top: 50%; margin-bottom: auto;">Google Maps
+        </button>
+
         <p id="testing"></p>
     </div>
 {% endblock content %}
@@ -87,7 +89,7 @@
                             alert("has to be allowed!");
                         }
                     })
-                    .catch(() => alert("not supported"));
+                    .catch(() => alert("not supported"));  // TODO
             }
         }
 
@@ -182,6 +184,7 @@
                 );
             return Math.round(psi);
         }
+
 
     </script>
 {% endblock script %}
