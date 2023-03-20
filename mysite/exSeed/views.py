@@ -404,9 +404,11 @@ def leaderboard(request):
     # If any of these states are true, dots are not needed in the leaderboard. This data is passed to the html 
     no_dots = user_in_top_five or user_in_top_seven or user_position is None
     # Library for all data needed in the leaderboard
-    pageContent = {'rankings': rank_and_rec, 'currentUser': user, 'noDots': no_dots,
-                   'extra': additional_rankings, 'position': user_position}
-
+    pageContent = {'rankings': rank_and_rec,
+                   'currentUser': user,
+                   'noDots': no_dots,
+                   'extra': additional_rankings,
+                   'position': user_position}
     return render(request, 'leaderboard.html', pageContent)
 
 
