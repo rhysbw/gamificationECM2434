@@ -41,15 +41,16 @@
 
 {% block content %}
     <div class="page_container">
-        <div class="compass" id="compass">
+        <!-- this is the current compass starting, need to add a text overlay or a button, TODO: add button call init() @BEN -->
+        <div class="compass" id="compass" onclick="init()">
             <img src="https://i.imgur.com/jpxEmwB.png" id="line">
             <div class="my-point" id="my-point"></div>
         </div>
+        <button class="btn btn-success"
+                onclick="window.location.href='https://maps.google.com/?q={{ spot_lat }},{{ spot_long }}'"
+                style="margin-top: 50%; margin-bottom: auto;">Google Maps
+        </button>
 
-        <!-- TODO: remove -->
-
-
-        <button class="btn btn-success" onclick="window.location.href='https://maps.google.com/?q={{ spot_lat }},{{ spot_long }}'" style="margin-top: 50%; margin-bottom: auto;">Google Maps</button>
         <p id="testing"></p>
     </div>
 {% endblock content %}
@@ -85,7 +86,7 @@
                             alert("has to be allowed!");
                         }
                     })
-                    .catch(() => alert("not supported"));
+                    .catch(() => alert("not supported"));  // TODO
             }
         }
 
@@ -148,7 +149,12 @@
             const {latitude, longitude} = position.coords; // user location
             pointDegree = calcDegreeToPoint(latitude, longitude);
             dist = distance(latitude, longitude, {{ spot_lat }}, {{ spot_long }});
-            document.getElementById("testing").innerHTML = dist + 'm'; // shows distance to spot
+            if (dist < 50){
+                            document.getElementById("testing").innerHTML = dist + 'm'; // shows distance to spot
+            }else{
+                document.getElementById("testing").innerHTML = "You've arrived"; // shows distance to spot
+            }
+
             if (pointDegree < 0) {
                 pointDegree = pointDegree + 360;
             }
@@ -181,9 +187,6 @@
             return Math.round(psi);
         }
 
-        window.onload = function() {
-            startCompass();
-        };
 
     </script>
 {% endblock script %}
