@@ -33,10 +33,6 @@
             display: block;
         }
 
-        .start-btn {
-            margin-top: 50%;
-            margin-bottom: auto;
-        }
 
     </style>
 {% endblock %}
@@ -51,7 +47,9 @@
         </div>
 
         <!-- TODO: remove -->
-        <button class="start-btn" onclick="init()">start</button>
+
+
+        <button class="btn btn-success" onclick="window.location.href='https://maps.google.com/?q={{ spot_lat }},{{ spot_long }}'" style="margin-top: 50%; margin-bottom: auto;">Google Maps</button>
         <p id="testing"></p>
     </div>
 {% endblock content %}
@@ -182,6 +180,10 @@
                 );
             return Math.round(psi);
         }
+
+        window.onload = function() {
+            startCompass();
+        };
 
     </script>
 {% endblock script %}
