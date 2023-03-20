@@ -743,7 +743,7 @@ def forgot_password(request):
             return render(request, 'password_reset_done.html')
     else:
         form = PasswordResetForm()
-    return render(request, 'forgot_password.html', {'form': form})
+    return render(request, 'registration/forgot_password.html', {'form': form})
 
 
 titles_dictionary = {
