@@ -18,6 +18,7 @@ urlpatterns = [
     path("graph", views.graph, name="graph_test"),
     path("addScore", views.addScore, name="score"),
     path("change_title/<title>", views.change_title, name="change_title"),
-    path("pledge", views.pledge, name="pledge")
+    path("pledge", views.pledge, name="pledge"),
+    path("take_pledge", views.take_pledge, name="takePledge")
 ]
 

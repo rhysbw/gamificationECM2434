@@ -13,61 +13,6 @@ from user_agents import parse
 import datetime
 import json
 
-
-def position_buffer_calc(position, buffer, record, column_name, prev_pos_score):
-    """Determines if there are any repeated score values that deserve repeated ranks
-
-    Args:
-        position (int): The current position being evaluated
-        buffer (int): The buffer int, allowing ranks to be skipped in the presence of repeated score
-        record (QuerySet): The current position's QuerySet
-        column_name (str): Name of the column being ranked
-        prev_pos_score(int): The score of the previous record
-
-    Returns:
-        (int, int): The position and buffer values
-        
-    @author = Rowan N
-    """
-    new_pos = position  # New position
-    new_buf = buffer  # New buffer
-    if prev_pos_score is None:  # This means this is the first record (and thus no comparison is needed)
-        pass
-    elif prev_pos_score == getattr(record, column_name):  # If scores are the same, position should stay the same
-        new_buf += 1  # The buffer increments to make up for the skipped position
-    else:  # The values are NOT equal, and as such the rank must increase
-        new_pos += buffer
-        new_buf = 1
-    return new_pos, new_buf  # Gives the new position and buffer values back to the main code
-
-
-def get_streak_image(user_pk, imageType) -> str:
-    user = UserInfo.objects.get(user__pk=user_pk)
-    if imageType == "profile":
-        pictures = [
-            "https://i.imgur.com/ASOswDa.png",  # stage one
-            "https://i.imgur.com/KpWonCy.png",  # stage two
-            "https://i.imgur.com/uakyl0I.png",  # stage three
-            "https://i.imgur.com/D1xeyhK.png",  # stage four
-            "https://i.imgur.com/BrsRkPM.png"  # stage five and above
-        ]
-    elif imageType == "leaderboard":
-        pictures = [
-            "https://i.imgur.com/ASOswDa.png",  # stage one
-            "https://i.imgur.com/KpWonCy.png",  # stage two
-            "https://i.imgur.com/uakyl0I.png",  # stage three
-            "https://i.imgur.com/D1xeyhK.png",  # stage four
-            "https://i.imgur.com/BrsRkPM.png"  # stage five and above
-        ]
-    streak = user.currentStreak
-    if streak > 4:
-        streak = 5
-    elif streak == 0:
-        streak = 1
-
-    return pictures[streak - 1]
-
-
 # Create your views here.
 def signup(request):
     """
@@ -154,6 +99,7 @@ def login_request(request):
     return render(request=request, template_name='registration/login.html', context={"login_form": form})
 
 
+@login_required()
 def logout_request(request):
     """
     View for '/logout': Logs the user out of the website
@@ -168,6 +114,7 @@ def logout_request(request):
     return redirect('home')
 
 
+@login_required()
 def delete_request(request, username):
     """
     View for '/delete/<username>': Registers a user in the django.contrib.auth user table
@@ -187,6 +134,7 @@ def delete_request(request, username):
     return redirect('home')
 
 
+@login_required()
 def home_page(request):
     """
     This view facilitates the display of the profile page at exseed.duckdns.org/
@@ -211,11 +159,8 @@ def home_page(request):
     if not user_agent.is_mobile:
         return render(request, 'QRCodePage.html')
 
-    # Checks if the user is logged in or not, if not they are automatically redirected
-    # to the login page
-    if not request.user.is_authenticated:
-        return redirect('/login')
-
+    if not UserInfo.objects.get(user__pk=request.user.pk).hasTakenPledge:
+        return redirect('/pledge')
     # Find the date of today
     today = datetime.date.today()
 
@@ -271,6 +216,7 @@ def home_page(request):
     return render(request, 'home.html', page_contents)
 
 
+@login_required()
 def leaderboard(request):
     """This view facilitates the display of the leaderboard at exseed.duckdns.org/leaderboard
 
@@ -299,10 +245,8 @@ def leaderboard(request):
     if not user_agent.is_mobile:
         return render(request, 'QRCodePage.html')
 
-    # Checks if the user is logged in or not, if not they are automatically redirected
-    # to the login page
-    if not request.user.is_authenticated:
-        return redirect('/login')
+    if not UserInfo.objects.get(user__pk=request.user.pk).hasTakenPledge:
+        return redirect('/pledge')
 
     # This block determines which sort of leaderboard is desired (streak or overall points)
     # The 'other' variable ensures that records are ordered by the not-selected score after initial ordering
@@ -412,6 +356,7 @@ def leaderboard(request):
     return render(request, 'leaderboard.html', pageContent)
 
 
+@login_required()
 def profile_page(request):
     """This view facilitates the display of the leaderboard at exseed.duckdns.org/profile
     Args:
@@ -437,10 +382,8 @@ def profile_page(request):
     if not user_agent.is_mobile:
         return render(request, 'QRCodePage.html')
 
-    # Checks if the user is logged in or not, if not they are automatically redirected
-    # to the login page
-    if not request.user.is_authenticated:
-        return redirect('/login')
+    if not UserInfo.objects.get(user__pk=request.user.pk).hasTakenPledge:
+        return redirect('/pledge')
 
     # Takes the users information from the user and UserInfo table to be assigned to the page_contents variables.
     user = request.user.pk
@@ -462,6 +405,7 @@ def profile_page(request):
         "streak_image": streak_image
     }
     return render(request, 'profile.html', page_contents)
+
 
 def graph():
     # Gather all of today's niceness ratings
@@ -492,16 +436,22 @@ def graph():
 
     background_colours = []
     for item in average_stars:
-        if item < 2:
-            background_colours.append("rgb(238,75,43)")
-        elif item < 3.5:
-            background_colours.append("#FF9900")
+        if item < 1:
+            background_colours.append("rgb(237,28,36)")  # Worst
+        elif item < 2:
+            background_colours.append("rgb(255,163,100)")  # Bad
+        elif item < 3:
+            background_colours.append("rgb(255,201,14)")  # Middle
+        elif item < 4:
+            background_colours.append("rgb(182,230,32)")  # Good
         else:
-            background_colours.append("rgb(0,255,0)")
+            background_colours.append("rgb(34,177,76)")  # Great
 
 
     return average_stars, background_colours
 
+
+@login_required()
 def compass(request):
     user_agent = parse(request.META['HTTP_USER_AGENT'])
     if not user_agent.is_mobile:
@@ -509,8 +459,9 @@ def compass(request):
 
     # Checks if the user is logged in or not, if not they are automatically redirected
     # to the login page
-    if not request.user.is_authenticated:
-        return redirect('/login')
+
+    if not UserInfo.objects.get(user__pk=request.user.pk).hasTakenPledge:
+        return redirect('/pledge')
 
     # Find the date of today
     today = datetime.date.today()
@@ -533,6 +484,8 @@ def compass(request):
         'spot_long': longitude}
     return render(request, 'compass.html', page_contents)
 
+
+@login_required()
 def change_profile_picture(request):
     """
     :param request:
@@ -546,10 +499,7 @@ def change_profile_picture(request):
     if not user_agent.is_mobile:
         return render(request, 'QRCodePage.html')
 
-    # Checks if the user is logged in or not, if not they are automatically redirected
-    # to the login page
-    if not request.user.is_authenticated:
-        return redirect('/login')
+
 
     if request.method == "POST":
         chosen_pfp = request.POST.get('chosen_pfp')
@@ -563,6 +513,8 @@ def change_profile_picture(request):
 
     return redirect('/profile')
 
+
+@login_required()
 def addScore(request):
     """
     This function adds the users rating of the spot to the db
@@ -576,11 +528,6 @@ def addScore(request):
     if not user_agent.is_mobile:
         return render(request, 'QRCodePage.html')
 
-    # Checks if the user is logged in or not, if not they are automatically redirected
-    # to the login page
-    if not request.user.is_authenticated:
-        return redirect('/login')
-
     today = datetime.date.today()
     first_register = UserInfo.objects.filter(lastSpotRegister=today)
     if len(first_register) == 0:
@@ -591,6 +538,17 @@ def addScore(request):
             print("saving item ", item)
             item.save()
 
+        # This code works out the average spot attendance value
+        prev_spot = SpotRecord.objects.get(spotDay=yesterday)
+        total_spot_times = len(SpotRecord.objects.filter(sId=prev_spot.sId))
+        spot = Spot.objects.get(pk=prev_spot.sId.pk)
+        if total_spot_times == 1:
+            spot.average_attendance = prev_spot.attendance
+        else:
+            total_attendance = spot.average_attendance * (total_spot_times - 1)
+            total_attendance += prev_spot.attendance
+            spot.average_attendance = total_attendance / total_spot_times
+        spot.save()
 
     if request.method == "POST":
         user_spot_rating = int(request.POST.get('star'))
@@ -631,24 +589,84 @@ def addScore(request):
     return render(request, 'error.html', {'error': 'already'})
 
 
+@login_required()
 def change_title(request, title):
     user_agent = parse(request.META['HTTP_USER_AGENT'])
     if not user_agent.is_mobile:
         return render(request, 'QRCodePage.html')
-
-    # Checks if the user is logged in or not, if not they are automatically redirected
-    # to the login page
-    if not request.user.is_authenticated:
-        return redirect('/login')
 
     info = UserInfo.objects.get(user_id=request.user.pk)
     info.title = title
     info.save()
     return redirect('/profile')
 
+
+@login_required()
 def pledge(request):
     return render(request, 'pledge.html')
 
+
+@login_required()
+def take_pledge(request):
+    if request.method == "POST":
+        info = UserInfo.objects.get(user__pk=request.user.pk)
+        info.hasTakenPledge = True
+        info.save()
+    return redirect('/')
+
+
+def position_buffer_calc(position, buffer, record, column_name, prev_pos_score):  # FUNCTION
+    """Determines if there are any repeated score values that deserve repeated ranks
+
+    Args:
+        position (int): The current position being evaluated
+        buffer (int): The buffer int, allowing ranks to be skipped in the presence of repeated score
+        record (QuerySet): The current position's QuerySet
+        column_name (str): Name of the column being ranked
+        prev_pos_score(int): The score of the previous record
+
+    Returns:
+        (int, int): The position and buffer values
+
+    @author = Rowan N
+    """
+    new_pos = position  # New position
+    new_buf = buffer  # New buffer
+    if prev_pos_score is None:  # This means this is the first record (and thus no comparison is needed)
+        pass
+    elif prev_pos_score == getattr(record, column_name):  # If scores are the same, position should stay the same
+        new_buf += 1  # The buffer increments to make up for the skipped position
+    else:  # The values are NOT equal, and as such the rank must increase
+        new_pos += buffer
+        new_buf = 1
+    return new_pos, new_buf  # Gives the new position and buffer values back to the main code
+
+
+def get_streak_image(user_pk, imageType) -> str:
+    user = UserInfo.objects.get(user__pk=user_pk)
+    if imageType == "profile":
+        pictures = [
+            "https://i.imgur.com/ASOswDa.png",  # stage one
+            "https://i.imgur.com/KpWonCy.png",  # stage two
+            "https://i.imgur.com/uakyl0I.png",  # stage three
+            "https://i.imgur.com/D1xeyhK.png",  # stage four
+            "https://i.imgur.com/BrsRkPM.png"  # stage five and above
+        ]
+    elif imageType == "leaderboard":
+        pictures = [
+            "https://i.imgur.com/ASOswDa.png",  # stage one
+            "https://i.imgur.com/KpWonCy.png",  # stage two
+            "https://i.imgur.com/uakyl0I.png",  # stage three
+            "https://i.imgur.com/D1xeyhK.png",  # stage four
+            "https://i.imgur.com/BrsRkPM.png"  # stage five and above
+        ]
+    streak = user.currentStreak
+    if streak > 4:
+        streak = 5
+    elif streak == 0:
+        streak = 1
+
+    return pictures[streak - 1]
 
 
 titles_dictionary = {

@@ -17,7 +17,7 @@ class ExseedConfig(AppConfig):
 
         @author: Benjamin
         """
-
+        '''
         # Imports the models within the function as this function only runs when it is ready
         from .models import SpotRecord, Spot
 
@@ -41,3 +41,4 @@ class ExseedConfig(AppConfig):
                        break
             # Saves the spot in the pervious spot attend database
             SpotRecord(sId=spot, attendance=0, spotDay=today).save()
+'''
