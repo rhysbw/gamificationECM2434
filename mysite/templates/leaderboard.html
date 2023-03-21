@@ -133,6 +133,12 @@
             width: 80px;
 
         }
+        hr {
+            display: block;
+            border-width: 5px;
+            border-style: dashed;
+            color: black;
+        }
 
 
     </style>
@@ -159,6 +165,9 @@ position - the current user's position on the table-->
         <br>
         <div class = "leaderboard-container">
             {% for record in UserResults %}
+                {% if record.3 == above_name%}
+                <hr>
+                {% endif %}
                     <div class="user-score" {% if record.0 == 1 %} id="first" {% endif %} {% if record.0 == 2 %} id="second" {% endif %} {% if record.0 == 3 %} id="third" {% endif %}>
                     <div class="position-container">
                         {{ record.0 }}

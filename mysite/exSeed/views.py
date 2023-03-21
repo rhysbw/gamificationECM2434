@@ -274,6 +274,7 @@ def leaderboard(request):
     buffer = 1  # Handles repeated positions
     additional_rankings = []  # Holds additional rankings needed (when user is below top 5)
     new_leaderboard_data = []
+    above_name = None
 
     # If the user is within the top 5, only the top 5 need be shown
     for record in top_rankings:
@@ -334,6 +335,7 @@ def leaderboard(request):
                 if counter == -1:
                     position, buffer = position_buffer_calc(position, buffer, record, column_name,
                                                             prev_prev_position_score)  # Re-evaluates record above user
+                    above_name = record.user.username
                 elif counter == 0 or counter == 1:
                     position, buffer = position_buffer_calc(position, buffer, record, column_name, prev_position_score)
                     # Evaluates user and one below
@@ -348,7 +350,8 @@ def leaderboard(request):
     # Library for all data needed in the leaderboard
     pageContent = {
         'leaderboardType': lb_type,
-        'UserResults': new_leaderboard_data
+        'UserResults': new_leaderboard_data,
+        'above_name': above_name
     }
 
     print(new_leaderboard_data)
