@@ -36,7 +36,7 @@
             text-decoration: underline;
         }
         #first {
-            background-color: #e8b923;
+            background-color: #FFD700 ;
             font-weight: bold;
             font-size: 22px;
         }
@@ -46,7 +46,7 @@
             font-size: 20px;
         }
         #third {
-            background-color: #b8860b;
+            background-color: #CD7F32;
             font-weight: bold;
             font-size: 18px
         }
@@ -101,6 +101,7 @@
         }
 
         .user-info {
+            padding-left: 5px;
             height: 100%;
             width: 140px;
             display: flex;
@@ -132,6 +133,12 @@
             width: 80px;
 
         }
+        hr {
+            display: block;
+            border-width: 5px;
+            border-style: dashed;
+            color: black;
+        }
 
 
     </style>
@@ -157,21 +164,24 @@ position - the current user's position on the table-->
         </div>
         <br>
         <div class = "leaderboard-container">
-            {% for record in rankings %}
-                <div class = "user-score">
+            {% for record in UserResults %}
+                {% if record.3 == above_name%}
+                <hr>
+                {% endif %}
+                    <div class="user-score" {% if record.0 == 1 %} id="first" {% endif %} {% if record.0 == 2 %} id="second" {% endif %} {% if record.0 == 3 %} id="third" {% endif %}>
                     <div class="position-container">
                         {{ record.0 }}
                     </div>
                     <div class="profile-images">
-                        <img src="https://i.imgur.com/QP8EIWK.png" id = "profile-picture">
+                        <img src="{{ record.2}}" id = "profile-picture">
                    </div>
                     <div class = "user-info">
                         <br>
-                        <p class = "userName"> {{ record.1.user.username }} </p>
-                        <p class = "title"> Recycling God</p>
+                        <p class = "userName"> {{ record.3 }} </p>
+                        <p class = "title"> {{ record.4 }}</p>
                     </div>
                     <div class = "score">
-                        {{ record.1.totalPoints }}
+                        {{ record.1 }}
                     </div>
                 </div>
 

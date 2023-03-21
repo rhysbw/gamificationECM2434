@@ -13,200 +13,199 @@ number_of_avatars: The length of the avatars list
 
 <!-- author Sam Tebbet and Benjamin -->
 {% block style %}
-<style>
-    .page-container {
-        position: relative;
-        display: flex;
-        height: 100vh;
-    }
+    <style>
+        .page-container {
+            position: relative;
+            display: flex;
+            height: 100vh;
+        }
 
+        .userName {
+            font-weight: bolder;
+            font-size: 23px;
+        }
 
-    .userName {
-        font-weight: bolder;
-        font-size: 23px;
-    }
+        .title {
+            font-weight: normal;
+            font-size: 16px;
+        }
 
-    .title {
-        font-weight: normal;
-        font-size: 16px;
-    }
+        .dropdown-menu {
+            left: 25%;
+        }
 
-    .dropdown-menu{
-        left: 25%
-    }
+        .image-container {
+            position: relative;
+            /* set the container's width and height to match the dimensions of the profile image */
+            width: 150px;
+            height: 150px;
+            top: 10px;
+            left: 10px;
+        }
 
-    .streak-info {
-        font-size: 25px;
-        font-weight: bold;
-    }
+        .profile-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
 
+        .streak-display {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            /* position the streak image at the bottom right corner of the container */
 
-    .image-container {
-      position: relative;
-      /* set the container's width and height to match the dimensions of the profile image */
-      width: 150px;
-      height: 150px;
-        top: 10px;
-      left: 10px;
-    }
+        }
 
-    .profile-image {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-    }
+        .user-info-container {
+            position: absolute;
+            /* set the container's width and height to match the dimensions of the profile image */
+            height: 150px;
+            top: 25px;
+            left: 180px;
+        }
 
-    .streak-image {
-      position: absolute;
-      width: 200px;
-      height: 200px;
-      /* position the streak image at the bottom right corner of the container */
+        .streak-info {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+        }
+        .streak-display{
+            position: absolute;
+            top:10%;
+            right: 50%;
+            text-align: left;
+        }
+        .streak-image{
+            margin-top: 50%;
+        }
 
-    }
+        img {
+            border-radius: 50%;
+            width: 95%;
+            height: 95%;
+        }
 
-    .user-info-container {
-        position: absolute;
-      /* set the container's width and height to match the dimensions of the profile image */
-      height: 150px;
-        top: 25px;
-      left: 180px;
-    }
+        p {
+            margin: 0;
+            padding: 0;
+        }
 
-    .streak-info {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
+        .circle img {
+            border-radius: 50%;
+            width: 95%;
+            height: 95%;
+        }
 
+        .image-grid-container {
+            display: grid;
+            grid-template-columns: auto auto auto;
+        }
 
-    img {
-        border-radius: 50%;
-        width: 95%;
-        height: 95%
-    }
-    p {
-        margin: 0;
-        padding: 0;
-    }
+        .modal-dialog {
+            width: 96.5%;
+            height: 100%;
+            top: 25%;
+        }
 
+        /* HIDE RADIO */
+        [type="radio"] {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
 
-    .circle img {
-        border-radius: 50%;
-        width: 95%;
-        height: 95%
-    }
+        /* IMAGE STYLES */
+        [type="radio"] + img {
+            cursor: pointer;
+        }
 
+        /* CHECKED STYLES */
+        [type="radio"]:checked + img {
+            outline: 2px solid black;
+        }
 
-    .image-grid-container {
-        display: grid;
-        grid-template-columns: auto auto auto;
-    }
+        .container button.btn-success {
+            float: right;
+        }
 
-
-
-    .modal-dialog{
-       width: 96.5%;
-       height: 100%;
-        top: 25%;
-    }
-    /* HIDE RADIO */
-    [type=radio] {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-
-    /* IMAGE STYLES */
-    [type=radio] + img {
-      cursor: pointer;
-    }
-
-    /* CHECKED STYLES */
-    [type=radio]:checked + img {
-      outline: 2px solid black;
-    }
-
-    .container button.btn-success{
-        float: right;
-    }
-
-    @media (max-width: 500px) {
-    .dropdown-menu{
-        height:250px;
-        overflow-y:auto;
-    }
-}
-
-</style>
+        @media (max-width: 500px) {
+            .dropdown-menu {
+                height: 250px;
+                overflow-y: auto;
+            }
+        }
+    </style>
 {% endblock style %}
 
 <!--- block that will add the body content into base.html --->
 {% block content %}
-<div class="page-container">
+    <div class="page-container">
 
-    <div class = "image-container">
-        <img src="{{ profileImage }}" alt="Click to change profile picture" class = "profile-image" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+        <div class="image-container">
+            <img src="{{ profileImage }}" alt="Click to change profile picture" class="profile-image"
+                 data-bs-toggle="modal" data-bs-target="#editProfileModal">
+        </div>
+
+        <div class="user-info-container">
+            <p class="userName"> {{ user.username }} </p>
+            <p class="title">{{ title }}</p>
+            <br>
+            <div class="dropdown">
+                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                    Change Title
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                    {% for other_title in titles %}
+                        <li><a class="dropdown-item" href="/change_title/{{ other_title }}">{{ other_title }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <div class="streak-info">
+            <p class="streak-display"> Current Streak: {{ streak }}</p>
+            </br>
+            <img src="{{ streak_image }}" class="streak-image">
+        </div>
+
+
     </div>
 
-    <div class = "user-info-container">
-        <p class="userName"> {{user.username}} </p>
-        <p class="title">{{title}}</p>
-        <br>
-        <div class="dropdown">
-        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
-            Change Title
-        </button>
-        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-            {% for other_title in titles %}
-                <li><a class="dropdown-item" href="/change_title/{{other_title}}">{{other_title}}</a></li>
-            {% endfor %}
-        </ul>
+
+    <!--- modal is a lightbox popup
+        Check how iterating though the arrays variable works
+        See if you can get the image to load on screen--->'
+    <div class="modal fade" id="editProfileModal" tabindex="1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <form action="/change_profile_picture" method="post">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="image-grid-container">
+                            {% for avatar in avatars %}
+                                <label>
+                                    <input type="radio" name="chosen_pfp" value="{{ avatar.0 }}">
+                                    <img src="{{ avatar.0 }}}">
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <div class="container">
+                            <button type="button" class="btn btn-warning" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-success">Save changes</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-
-    <div class = "streak-info">
-        <p class = "streak-display"> Current Streak: {{ streak }}</p>
-        <img src="{{ streak_image }}" class = "streak-image">
-    </div>
-
-
-</div>
-
-
-<!--- modal is a lightbox popup
-    Check how iterating though the arrays variable works
-    See if you can get the image to load on screen--->'
-<div class="modal fade" id="editProfileModal" tabindex="1" role="dialog" aria-hidden="true" >
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-        <form action="/change_profile_picture" method="post">
-          {% csrf_token %}
-      <div class="modal-body">
-          <div class="image-grid-container">
-              {% for avatar in avatars %}
-                    <label>
-                      <input type="radio" name="chosen_pfp" value="{{ avatar.0 }}">
-                      <img src="{{ avatar.0 }}}">
-                    </label>
-              {% endfor %}
-          </div>
-      </div>
-      <div class="modal-footer">
-          <div class="container">
-        <button type="button" class="btn btn-warning" data-bs-dismiss="modal">Close</button>
-        <button type="submit" class="btn btn-success">Save changes</button>
-          </div>
-      </div>
-      </form>
-    </div>
-  </div>
-</div>
 {% endblock content %}
 
 
