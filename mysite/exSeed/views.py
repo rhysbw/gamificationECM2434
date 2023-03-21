@@ -277,6 +277,7 @@ def leaderboard(request):
     buffer = 1  # Handles repeated positions
     rank_and_rec = []  # Lines up record with their position(aka rank) on the leaderboard
     additional_rankings = []  # Holds additional rankings needed (when user is below top 5)
+    new_leaderboard_data = []
 
     # If the user is within the top 5, only the top 5 need be shown
     for record in top_rankings:
@@ -287,6 +288,7 @@ def leaderboard(request):
             user_in_top_five = True  # User found in top 5, so no additional_rankings required
             user_position = position + buffer  # The users index in the ordered table
         prev_position_score = getattr(record, column_name)  # Saves previous rank's score
+        new_leaderboard_data.append([position, prev_position_score, record.avatarId.imageName, record.user.username, record.title])
 
     # Elif the user is within the top 7, gather only their record and any above (so if 6, get only 6)
     if not user_in_top_five:
@@ -295,10 +297,12 @@ def leaderboard(request):
         for record in six_and_seven:
             position, buffer = position_buffer_calc(position, buffer, record, column_name, prev_position_score)
             RaR = [position, record]
-            additional_rankings.append(RaR)
+            additional_rankings.append([position, getattr(record, column_name), record.avatarId.imageName, record.user.username, record.title])
             if user == record.user.pk:
                 user_in_top_seven = True
                 user_position = position + buffer
+                for item in additional_rankings:
+                    new_leaderboard_data.append(item)
                 break  # Once user is found, no additional information is needed, and thus we break out of the loop
             prev_position_score = getattr(record, column_name)  # Saves prevous rank's score
 
@@ -342,17 +346,25 @@ def leaderboard(request):
                     # Evaluates user and one below
                 prev_position_score = getattr(record, column_name)
                 RaR = [position, record]  # Rank and record saved in correct format
-                additional_rankings.append(RaR)  # Rank and record appended to 2D array
+                additional_rankings.append([position, getattr(record, column_name), record.avatarId.imageName, record.user.username, record.title])  # Rank and record appended to 2D array
                 counter += 1  # Increments counter so the program knows which record it is looking at
+            for item in additional_rankings:
+                new_leaderboard_data.append(item)
 
     # If any of these states are true, dots are not needed in the leaderboard. This data is passed to the html 
     no_dots = user_in_top_five or user_in_top_seven or user_position is None
     # Library for all data needed in the leaderboard
+    '''
     pageContent = {'rankings': rank_and_rec,
                    'currentUser': user,
                    'noDots': no_dots,
                    'extra': additional_rankings,
                    'position': user_position}
+    '''
+    pageContent = {
+        'leaderboardType': lb_type,
+        'UserResults': new_leaderboard_data
+    }
     return render(request, 'leaderboard.html', pageContent)
 
 
