@@ -147,13 +147,15 @@ LOGIN_URL = '/login'
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "home"
 
+"""
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 EMAIL_FILE_PATH = BASE_DIR / "sent_emails"
+"""
 
-"""
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 25
+EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'samtebbet@gmail.com'
-EMAIL_HOST_PASSWORD = 'googleTebbet12'
-"""
+EMAIL_HOST_USER = 'noreply.exseed@gmail.com'
+EMAIL_HOST_PASSWORD = 'wvqbetysbnocwtsm'
+DEFAULT_FROM_EMAIL = 'noreply.exseed@gmail.com'
+
