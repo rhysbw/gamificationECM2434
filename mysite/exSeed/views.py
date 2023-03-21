@@ -737,19 +737,17 @@ def get_streak_image(user_pk, imageType) -> str: # FUNCTION
 def privacy_policy(request):
     return render(request, 'privacy_policy.html')
 
-
+"""
 def forgot_password(request):
-    """
-    @author Owen G
-    """
     if request.method == 'POST':
-        form = PasswordResetForm(request.POST)
-        if form.is_valid():
-            form.save()
+        reset_password = PasswordResetForm(request.POST)
+        if reset_password.is_valid():
+            reset_password.save()
             return render(request, 'password_reset_done.html')
     else:
-        form = PasswordResetForm()
-    return render(request, 'registration/forgot_password.html', {'form': form})
+        reset_password = PasswordResetForm()
+    return render(request, 'registration/forgot_password.html', {'reset_pass_form': reset_password})
+"""
 
 def create_user_info(request):
     user = request.user.pk
