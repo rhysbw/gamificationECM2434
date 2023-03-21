@@ -149,9 +149,11 @@
             const {latitude, longitude} = position.coords; // user location
             pointDegree = calcDegreeToPoint(latitude, longitude);
             dist = distance(latitude, longitude, {{ spot_lat }}, {{ spot_long }});
-            if (dist < 50){
-                            document.getElementById("testing").innerHTML = dist + 'm'; // shows distance to spot
-            }else{
+
+            //TODO: FIX THIS @rhys/@ben
+            if (dist < 50) {
+                document.getElementById("testing").innerHTML = dist + 'm'; // shows distance to spot
+            } else {
                 document.getElementById("testing").innerHTML = "You've arrived"; // shows distance to spot
             }
 

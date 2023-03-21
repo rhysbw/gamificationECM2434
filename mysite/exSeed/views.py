@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import PasswordResetForm
 
 from .forms import SignupForm, ProfilePictureForm
 from .models import Spot, UserInfo, SpotRecord, Avatar, UserRegister
@@ -138,12 +139,12 @@ def delete_request(request, username):
 def home_page(request):
     """
     This view facilitates the display of the profile page at exseed.duckdns.org/
-    param: request (HTML_REQUEST): The Django-supplied web request that contains information about the current request to see this view
+    param: request (HTTP_REQUEST): The Django-supplied web request that contains information about the current request to see this view
     returns:
         PAGE_REDIRECT: If certain criteria are not met (user is logged in, user is on mobile device), the view returns a redirect to the
         appropriate page to handle this
         Non-erroneous return: (request, 'profile.html', page_contents)
-        request (HTML_REQUEST): Passes on request data to the webpage
+        request (HTTP_REQUEST): Passes on request data to the webpage
         'home.html' (str): The string name of the desired html doc the page_contents should be displayed on.
         page_contents (library): A library of information to be displayed on the profile webpage.
             image (str) : The url for the current spot of the day.
@@ -191,7 +192,6 @@ def home_page(request):
         yesterdaysRegister = UserInfo.objects.filter(~Q(lastSpotRegister=yesterday))
         yesterdaysRegister.update(currentStreak=0)
         for item in yesterdaysRegister:
-            print("saving item ", item)
             item.save()
         '''
     # Assigns the values of today's spot so they can be rendered into the website
@@ -220,14 +220,14 @@ def home_page(request):
 def leaderboard(request):
     """This view facilitates the display of the leaderboard at exseed.duckdns.org/leaderboard
 
-    Args: request (HTML_REQUEST): The Django-supplied web request that contains information about the current request
+    Args: request (HTTP_REQUEST): The Django-supplied web request that contains information about the current request
     to see this view
 
     Returns:
         PAGE_REDIRECT: If certain criteria are not met (user is logged in, user is on mobile device), the view returns a
             redirect to the appropriate page to handle this
         Non-erroneous return: (request, 'leaderboard.html', page_contents)
-        request (HTML_REQUEST): Passes on request data to the webpage
+        request (HTTP_REQUEST): Passes on request data to the webpage
         'leaderboard.html' (str): The string name of the desired html doc the page_contents should be displayed on
         page_contents (library): A library of information to be displayed on the leaderboard webpage
             rank_and_rec ([int, Query]): Contains users rank and corresponding database record
@@ -277,6 +277,7 @@ def leaderboard(request):
     buffer = 1  # Handles repeated positions
     rank_and_rec = []  # Lines up record with their position(aka rank) on the leaderboard
     additional_rankings = []  # Holds additional rankings needed (when user is below top 5)
+    new_leaderboard_data = []
 
     # If the user is within the top 5, only the top 5 need be shown
     for record in top_rankings:
@@ -287,6 +288,7 @@ def leaderboard(request):
             user_in_top_five = True  # User found in top 5, so no additional_rankings required
             user_position = position + buffer  # The users index in the ordered table
         prev_position_score = getattr(record, column_name)  # Saves previous rank's score
+        new_leaderboard_data.append([position, prev_position_score, record.avatarId.imageName, record.user.username, record.title])
 
     # Elif the user is within the top 7, gather only their record and any above (so if 6, get only 6)
     if not user_in_top_five:
@@ -295,10 +297,12 @@ def leaderboard(request):
         for record in six_and_seven:
             position, buffer = position_buffer_calc(position, buffer, record, column_name, prev_position_score)
             RaR = [position, record]
-            additional_rankings.append(RaR)
+            additional_rankings.append([position, getattr(record, column_name), record.avatarId.imageName, record.user.username, record.title])
             if user == record.user.pk:
                 user_in_top_seven = True
                 user_position = position + buffer
+                for item in additional_rankings:
+                    new_leaderboard_data.append(item)
                 break  # Once user is found, no additional information is needed, and thus we break out of the loop
             prev_position_score = getattr(record, column_name)  # Saves prevous rank's score
 
@@ -342,17 +346,25 @@ def leaderboard(request):
                     # Evaluates user and one below
                 prev_position_score = getattr(record, column_name)
                 RaR = [position, record]  # Rank and record saved in correct format
-                additional_rankings.append(RaR)  # Rank and record appended to 2D array
+                additional_rankings.append([position, getattr(record, column_name), record.avatarId.imageName, record.user.username, record.title])  # Rank and record appended to 2D array
                 counter += 1  # Increments counter so the program knows which record it is looking at
+            for item in additional_rankings:
+                new_leaderboard_data.append(item)
 
     # If any of these states are true, dots are not needed in the leaderboard. This data is passed to the html 
     no_dots = user_in_top_five or user_in_top_seven or user_position is None
     # Library for all data needed in the leaderboard
+    '''
     pageContent = {'rankings': rank_and_rec,
                    'currentUser': user,
                    'noDots': no_dots,
                    'extra': additional_rankings,
                    'position': user_position}
+    '''
+    pageContent = {
+        'leaderboardType': lb_type,
+        'UserResults': new_leaderboard_data
+    }
     return render(request, 'leaderboard.html', pageContent)
 
 
@@ -360,13 +372,13 @@ def leaderboard(request):
 def profile_page(request):
     """This view facilitates the display of the leaderboard at exseed.duckdns.org/profile
     Args:
-        request (HTML_REQUEST): The Django-supplied web request that contains information about the current request to see this view
+        request (HTTP_REQUEST): The Django-supplied web request that contains information about the current request to see this view
 
     Returns:
         PAGE_REDIRECT: If certain criteria are not met (user is logged in, user is on mobile device), the view returns a redirect to the
         appropriate page to handle this
         Non-erroneous return: (request, 'profile.html', page_contents)
-        request (HTML_REQUEST): Passes on request data to the webpage
+        request (HTTP_REQUEST): Passes on request data to the webpage
         'profile.html' (str): The string name of the desired html doc the page_contents should be displayed on
         page_contents (library): A library of information to be displayed on the profile webpage
             streak (int) : The users current streak to be put into the html template
@@ -407,26 +419,34 @@ def profile_page(request):
     return render(request, 'profile.html', page_contents)
 
 
-def graph():
-    # Gather all of today's niceness ratings
+def graph() -> tuple[list[int],list[str]]:
+    """This function gathers all of todays spot's ratings, finds the average for each hour and puts all the data into an
+        array for the graph. It also supplies the appropriate bar colour for each hour on the graph.
+
+    Returns:
+        tuple[list[int],list[str]]: A tuple containing the list of average spot score (int) and their corresponding colours (str)
+
+    @author Rowan N
+    """
+    # Gather all of today's star ratings
     spot_data = UserRegister.objects.filter(srId__spotDay=datetime.date.today()).order_by('registerTime')
     # If empty graph not wanted to be viewed, here is where we could check if spot_data had any contents and redirect
     # Array of all average values where index 0 = 6:00 and index 12 is 18:00
     average_stars = [0,0,0,0,0,0,0,0,0,0,0,0,0]
-    raw_register = []  # This stores hour and score for each item in the db
     previous_hour = -1
     hour_total = 0
     records_in_hour = 0
     for record in spot_data:
         hour = record.registerTime.hour
         if hour == previous_hour or previous_hour == -1:  # If the previous_hour is -1 then this is the first record
-            hour_total += record.spotNiceness
+            # If hour == previous_hour, then we are still getting details from the same hour, and so totals should be added to
+            hour_total += record.spotNiceness 
             records_in_hour += 1
-        else:
-            average_stars[previous_hour - 6] = float(hour_total) / records_in_hour
-            hour_total = record.spotNiceness
+        else:  # We arrive here when we are dealing with a different time to the previous record
+            average_stars[previous_hour - 6] = float(hour_total) / records_in_hour  # Last hours details are saved
+            hour_total = record.spotNiceness # hour_total and records_in_hour are reset for new hour
             records_in_hour = 1
-        previous_hour = hour
+        previous_hour = hour # Ensures we're always looking at the most recent hour
     try:
         average_stars[previous_hour - 6] = float(hour_total) / records_in_hour  # Makes sure the final value is added
     except IndexError:
@@ -434,15 +454,15 @@ def graph():
     except ZeroDivisionError:
         pass  # Avoids zero division when no records are returned to spot_data
 
-    background_colours = []
+    background_colours = [] # Will store the colours for each bar
     for item in average_stars:
-        if item < 1:
+        if item <= 1:
             background_colours.append("rgb(237,28,36)")  # Worst
-        elif item < 2:
+        elif item <= 2:
             background_colours.append("rgb(255,163,100)")  # Bad
-        elif item < 3:
+        elif item <= 3:
             background_colours.append("rgb(255,201,14)")  # Middle
-        elif item < 4:
+        elif item <= 4:
             background_colours.append("rgb(182,230,32)")  # Good
         else:
             background_colours.append("rgb(34,177,76)")  # Great
@@ -516,50 +536,66 @@ def change_profile_picture(request):
 
 @login_required()
 def addScore(request):
+    """Adds score and streak to a user once they arrive at the spot. Also logs this users rating of the spot.
+        This view also implements streak resetting for users who did not attend the spot yesterday, and calculates yesterday's spots new spot average
+
+    Args:
+        request (HTTP_request): The Django-supplied web request that contains information about the current request to see this view
+
+    Returns:
+        Erroneous-returns: Ensures users who get to this url in an undesired manner are redirected to avoid errors
+            Non-mobile users are redirected to the 'You cannot access this resource on a non-mobile device' page
+            Users who aren't logged in are redirected to log in
+            Users who got here without a POST http_request are redirected to home.html
+            Users who are registering at an incorrect time are redirected to error.html, where their mistake is displayed
+            Users who have already registered are redirected to error.html, where their mistake is displayed
+        Non-erroneous return: Returns the user to home.html once they've been successfully registered
+
+    @author Rowan N
     """
-    This function adds the users rating of the spot to the db
-    :param request:
-        The Django-supplied web request that contains information about the current request to see this view
-    :return: redirect to web page
-    """
+    
     # Checks if the user is on a desktop instead of mobile and if
     # so renders the QR code page
     user_agent = parse(request.META['HTTP_USER_AGENT'])
     if not user_agent.is_mobile:
         return render(request, 'QRCodePage.html')
-
-    today = datetime.date.today()
-    first_register = UserInfo.objects.filter(lastSpotRegister=today)
-    if len(first_register) == 0:
-        yesterday = today - datetime.timedelta(days=1)
-        yesterdaysRegister = UserInfo.objects.filter(~Q(lastSpotRegister=yesterday) & ~Q(lastSpotRegister=today))
-        yesterdaysRegister.update(currentStreak=0)
-        for item in yesterdaysRegister:
-            print("saving item ", item)
-            item.save()
-
-        # This code works out the average spot attendance value
-        prev_spot = SpotRecord.objects.get(spotDay=yesterday)
-        total_spot_times = len(SpotRecord.objects.filter(sId=prev_spot.sId))
-        spot = Spot.objects.get(pk=prev_spot.sId.pk)
-        if total_spot_times == 1:
-            spot.average_attendance = prev_spot.attendance
-        else:
-            total_attendance = spot.average_attendance * (total_spot_times - 1)
-            total_attendance += prev_spot.attendance
-            spot.average_attendance = total_attendance / total_spot_times
-        spot.save()
-
+    
+    # Ensures a user who did not get here by sending a post request from home.html gets redirected back home
     if request.method == "POST":
         user_spot_rating = int(request.POST.get('star'))
     else:
         redirect('/')
 
+    today = datetime.date.today()
+    first_register = UserInfo.objects.filter(lastSpotRegister=today)
+    if len(first_register) == 0:
+        yesterday = today - datetime.timedelta(days=1)
+        # Gets ALL UserInfo records that have not played either yesterday or today
+        # Today is only included in case of errors, there should never actually be any users that registered today
+        yesterdaysRegister = UserInfo.objects.filter(~Q(lastSpotRegister=yesterday) & ~Q(lastSpotRegister=today))
+        yesterdaysRegister.update(currentStreak=0)  # Makes all their streaks 0
+        for item in yesterdaysRegister:
+            item.save()  # Saves each item. No bulk saving method
+
+        # This code works out the average spot attendance value
+        prev_spot = SpotRecord.objects.get(spotDay=yesterday) # Finds the spot that was SotD yesterday
+        total_spot_times = len(SpotRecord.objects.filter(sId=prev_spot.sId)) # How many times has this spot been spot of the day
+        spot = Spot.objects.get(pk=prev_spot.sId.pk)
+        if total_spot_times == 1: # If there has only been one spot instance for this spot, then the average is yesterdays attendance
+            spot.average_attendance = prev_spot.attendance
+        else: # The spot has been SotD multiple times
+            total_attendance = spot.average_attendance * (total_spot_times - 1) # 'Reverses' average to find a rough total attendance
+            total_attendance += prev_spot.attendance
+            spot.average_attendance = total_attendance / total_spot_times # Updates average with latest attendance
+            # NOTE: This system isn't the most accurate, as we could go through all spot instances to get an exact average, however
+            # this felt like an unnecessary computation when the above system does the same thing with minimal accuracy loss
+        spot.save() # Saves the new spot data
+
     now = datetime.datetime.now()
     nowTime = now.time()
     #nowTime = datetime.time(12,12,12)  # Used only for the purpose of testing outside of allowed times (6am to 7pm)
-    if nowTime.hour < 6 or nowTime.hour > 18:
-        return render(request, 'error.html', {'error': 'time'})
+    if nowTime.hour < 6 or nowTime.hour > 18: # Ensures that the user cannot register outside of accepted times
+        return render(request, 'error.html', {'error': 'time'}) # Informs the user of their error
 
     # Checks if there is a spot for today and if not returns the user to the home page (where one will be assigned)
     try:
@@ -573,20 +609,21 @@ def addScore(request):
     except  :
         # Adds their score to the database
         todays_registers = UserInfo.objects.filter(lastSpotRegister=today)
+        # Additional points are given to the earliest 4 users. First gets 5 total points, second 4, third 3, fourth 2
         additional_points = 4 - len(todays_registers)
         if additional_points < 0:
-            additional_points = 0
+            additional_points = 0 # This ensures that later users do not get negative points
         info = UserInfo.objects.get(user_id=request.user.pk)
         info.totalPoints = info.totalPoints + 1 + additional_points
         info.currentStreak = info.currentStreak + 1
         info.lastSpotRegister = today
         spot.attendance = spot.attendance + 1
-        UserRegister(uId=request.user, srId=spot, spotNiceness=user_spot_rating, registerTimeEditable=nowTime).save()
-        spot.save()
-        info.save()
-        return redirect('/')
+        UserRegister(uId=request.user, srId=spot, spotNiceness=user_spot_rating, registerTimeEditable=nowTime).save() # Registers user at spot
+        spot.save() # Saves spot with incremented attendance
+        info.save() # Saves the new lastSpotRegister for the user
+        return redirect('/') # Returns the user home
 
-    return render(request, 'error.html', {'error': 'already'})
+    return render(request, 'error.html', {'error': 'already'}) # Ensures the user can only register once
 
 
 @login_required()
@@ -603,19 +640,40 @@ def change_title(request, title):
 
 @login_required()
 def pledge(request):
+    """Renders the pledge to a user once they've registered/when they try to access pages having not accepted the pledge
+
+    Args:
+        request (HTTP_request): The Django-supplied web request that contains information about the current request to see this view
+
+    Returns:
+        request (HTTP_REQUEST): Passes on request data to the webpage
+        'pledge.html' (str): The string name of the desired html doc to show the user
+
+    @author Rowan N
+    """
     return render(request, 'pledge.html')
 
 
 @login_required()
 def take_pledge(request):
-    if request.method == "POST":
+    """Records that this user has taken the SotD pledge
+
+    Args:
+        request (HTTP_request): The Django-supplied web request that contains information about the current request to see this view
+
+    Returns:
+        Sends the user to the home page
+
+    @author Rowan N
+    """
+    if request.method == "POST": # Only takes action when the user gets where with a POST request
         info = UserInfo.objects.get(user__pk=request.user.pk)
         info.hasTakenPledge = True
-        info.save()
+        info.save() # Saves the UserInfo to record they've taken the pledge
     return redirect('/')
 
 
-def position_buffer_calc(position, buffer, record, column_name, prev_pos_score):  # FUNCTION
+def position_buffer_calc(position, buffer, record, column_name, prev_pos_score) -> tuple[int,int]:  # FUNCTION
     """Determines if there are any repeated score values that deserve repeated ranks
 
     Args:
@@ -642,7 +700,19 @@ def position_buffer_calc(position, buffer, record, column_name, prev_pos_score):
     return new_pos, new_buf  # Gives the new position and buffer values back to the main code
 
 
-def get_streak_image(user_pk, imageType) -> str:
+def get_streak_image(user_pk, imageType) -> str: # FUNCTION
+    """Returns the relevant streak image for a given user, such that every view can access them
+
+    Args:
+        user_pk (int): The current users assigned primary key (accessible through request.user.pk)
+        imageType (str): Defines which kind of streak image is returned. Can be "profile" or "leaderboard"
+            NOTE: Leaderboard streak images phased out of deployment product
+
+    Returns:
+        str: The link to the desired image that represents the current users active streak
+
+    @author Rowan N
+    """
     user = UserInfo.objects.get(user__pk=user_pk)
     if imageType == "profile":
         pictures = [
@@ -650,7 +720,7 @@ def get_streak_image(user_pk, imageType) -> str:
             "https://i.imgur.com/KpWonCy.png",  # stage two
             "https://i.imgur.com/uakyl0I.png",  # stage three
             "https://i.imgur.com/D1xeyhK.png",  # stage four
-            "https://i.imgur.com/BrsRkPM.png"  # stage five and above
+            "https://i.imgur.com/BrsRkPM.png"   # stage five and above
         ]
     elif imageType == "leaderboard":
         pictures = [
@@ -658,15 +728,34 @@ def get_streak_image(user_pk, imageType) -> str:
             "https://i.imgur.com/KpWonCy.png",  # stage two
             "https://i.imgur.com/uakyl0I.png",  # stage three
             "https://i.imgur.com/D1xeyhK.png",  # stage four
-            "https://i.imgur.com/BrsRkPM.png"  # stage five and above
+            "https://i.imgur.com/BrsRkPM.png"   # stage five and above
         ]
     streak = user.currentStreak
+    # Ensures streak cannot go above 5 or below 1 (to fit image constraints)
     if streak > 4:
         streak = 5
     elif streak == 0:
         streak = 1
 
     return pictures[streak - 1]
+
+
+def privacy_policy(request):
+    return render(request, 'privacy_policy.html')
+
+
+def forgot_password(request):
+    """
+    @author Owen G
+    """
+    if request.method == 'POST':
+        form = PasswordResetForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return render(request, 'password_reset_done.html')
+    else:
+        form = PasswordResetForm()
+    return render(request, 'registration/forgot_password.html', {'form': form})
 
 
 titles_dictionary = {

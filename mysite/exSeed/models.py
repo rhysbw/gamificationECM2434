@@ -13,6 +13,17 @@ These primary keys can be referenced to with .pk if needed
 
 # Validators
 def valid_time(time):
+    """Ensures any manual register entries are within valid bounds
+
+    Args:
+        time (datetime.time): The time of the register submission
+
+    Raises:
+        ValidationError: Time is too early for start time (default is 06:00)
+        ValidationError: Time is too late for end time (default is 19:00)
+
+    @author Rowan N
+    """
     current_hour = time.hour
     earliest_hour = 6  # This value indicates the earliest hour the user can submit a valid time
     latest_hour = 18  # This value indicates the final hour within which a user can submit a valid time
@@ -36,12 +47,16 @@ class UserInfo(models.Model):
         user (OneToOneField): This is a link to an existing user in the auth_user table.
             Each user can only have ONE entry in UserInfo (OneToOne relation), and if the user is deleted, the CASCADE option ensures this
             record will also be deleted
-        avatarId (ForeignKey): This records what avatar this user has chosen to represent them. This is the avatar ID from the Avatar table
-            It defaults to 1 (the first ID in the avatar table)
+        avatarId (ForeignKey): This records what avatar this user has chosen to represent them. This is the avatar ID from the Avatar table.
+            Defaults to 1 (the first ID in the avatar table)
         title (CharField): This is the title this user has chosen to represent them on their user page, visable to other users. Can be empty
         totalPoints (PositiveSmallIntegerField): Holds this users total points acquired whilst playing the game
         currentStreak (PositiveSmallIntegerField): Holds this users current points earned back-to-back (daily)
-        group (CharField): Holds the group this user is affiliated with. Can be empty
+        lastSpotRegister (DateField): Holds the date that this user last registered at a spot. Used when resetting streaks of users who have
+            not played yesterday
+        hasTakenPledge (BooleanField): Boolean value for if the user has taken the SotD pledge. Means this user cannot access main pages of the
+            site if false.
+        
 
     Functions:
         __str__(self): Defines how each record in the table is represented (E.g. 7 dev [CS=1 TP=1]) (AKA ID Username [currentStreak totalPoints])
@@ -102,14 +117,14 @@ class UserInfo(models.Model):
 
 
 class Avatar(models.Model):
-    """This table holds all data on the avatars users can choose to represent themselves
+    """This table holds all data on the avatars users can choose to represent themselves on the leaderboard and their profile
 
     Columns:
-        imageName (CharField): Holds the name of the .png file this image is saved as
+        imageName (CharField): Holds the link to the image
         avatarTitle (CharField): The name of this avatar, used as a human-readable way to distinguish avatars
 
     Functions:
-        __str__(self): Defines how each record in the table is represented (E.g. avatar1.png) (AKA imageName)
+        __str__(self): Defines how each record in the table is represented (E.g. Fish) (AKA avatarTitle)
     
     Other:
 
@@ -138,11 +153,11 @@ class Spot(models.Model):
             under -90
         longitude (DecimalField): The East-West longitude of this spot. Allows for sex decimal places of accuracy. Cannot go over 180
             or under -180
-        average_attendance_int (PositiveSmallIntegerField): The average attendance of this spot when it is the spot of the day
-        imageName (CharField): The .png name of the file that holds the image for this spot. Can be empty
+        average_attendance (PositiveSmallIntegerField): The average attendance of this spot when it is the spot of the day
+        imageName (CharField): The link to the image for this spot. Can be empty
 
     Functions:
-        __str__(self): Defines how each record in the table is represented (E.g. Duck Pond (ID 1)) (AKA name (spotID))
+        __str__(self): Defines how each record in the table is represented (E.g. Duck Pond (ID 1)) (AKA name (ID spotID))
     
     Other:
         The meta class defines how information from this table is referred to in the admin screen (named for purpose of clarity)
@@ -183,7 +198,7 @@ class Spot(models.Model):
         #db_index=True,  # This may be an important value through which to judge spots
     )
     imageName = models.CharField(
-        help_text="The name of the png file that holds this spots image",
+        help_text="The link to this spots image",
         max_length=100,
         blank=True,
     )
@@ -204,10 +219,15 @@ class UserRegister(models.Model):
             a user can be represented multiple times in the table
         srId (ForeignKey): The primary key of the spot-instance (previousSpotAttend). This is the spot and the day the spot was
             the spot of the day. Since multiple users can register at the same spot, this can be found multiple times in the table
+        spotNiceness (PositiveSmallIntegerField): How the user rated the spot when they visited (From one to five stars). This data
+            is used to populate the graph mapping spot quality over the day
+        registerTime (TimeField): Holds when the user registered their attendance at the spot. This field is automatically populated
+            at record inception, and so cannot be spoofed or edited. Used to tell the graph when the users rating applies.
+        registerTimeEditable (TimeField): Holds a manually enterable time value, used to test the system and graph.
 
     Functions:
-        __str__(self): Defines how each record in the table is represented (E.g. dev attended the spot on 2023-03-01) 
-                                                                           (AKA uId.username attended the spot on srId.spotDay))
+        __str__(self): Defines how each record in the table is represented (E.g. dev attended spot on 1 March at 14:47:09) 
+                                                                           (AKA uId.username attended spot on srId.spotDay at registerTime))
     
     Other:
         The meta class defines how information from this table is referred to in the admin screen (named for purpose of clarity)
@@ -258,13 +278,12 @@ class SpotRecord(models.Model):  # SpotRecord
     """This table holds each instance of a spot being the spot of the day 
 
     Columns:
-        name (_type_): _description_
         sId (ForeignKey): Holds the spot that is the spot of the day. If the spot it's referencing is deleted, this record is also deleted
         attendance (PositiveSmallIntegerField): Records how many individuals have attended this spot-instance. Default is 0
         spotDay (DateField): The actual date this spot is spot of the day. Must be unique (only one spot can be spot of the day)
 
     Functions:
-        __str__(self): Defines how each record in the table is represented (E.g. 2023-02-26 Rock Garden) (AKA spotDay sId.name)
+        __str__(self): Defines how each record in the table is represented (E.g. 26 February - Rock Garden) (AKA spotDay - sId.name)
     
     Other:
         The meta class defines how information from this table is referred to in the admin screen (named for purpose of clarity)
