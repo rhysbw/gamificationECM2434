@@ -414,8 +414,8 @@ def graph() -> tuple[list[int],list[str]]:
     # Gather all of today's star ratings
     spot_data = UserRegister.objects.filter(srId__spotDay=datetime.date.today()).order_by('registerTime')
     # If empty graph not wanted to be viewed, here is where we could check if spot_data had any contents and redirect
-    # Array of all average values where index 0 = 6:00 and index 12 is 18:00
-    average_stars = [0,0,0,0,0,0,0,0,0,0,0,0,0]
+    # Array of all average values where index 0 = 9:00 and index 7 is 16:00
+    average_stars = [0, 0, 0, 0, 0, 0, 0, 0]
     previous_hour = -1
     hour_total = 0
     records_in_hour = 0
@@ -426,12 +426,12 @@ def graph() -> tuple[list[int],list[str]]:
             hour_total += record.spotNiceness 
             records_in_hour += 1
         else:  # We arrive here when we are dealing with a different time to the previous record
-            average_stars[previous_hour - 6] = float(hour_total) / records_in_hour  # Last hours details are saved
+            average_stars[previous_hour - 9] = float(hour_total) / records_in_hour  # Last hours details are saved
             hour_total = record.spotNiceness # hour_total and records_in_hour are reset for new hour
             records_in_hour = 1
         previous_hour = hour # Ensures we're always looking at the most recent hour
     try:
-        average_stars[previous_hour - 6] = float(hour_total) / records_in_hour  # Makes sure the final value is added
+        average_stars[previous_hour - 9] = float(hour_total) / records_in_hour  # Makes sure the final value is added
     except IndexError:
         pass  # Avoids previous_hour calling an index that is not present (aka -7)
     except ZeroDivisionError:
@@ -577,7 +577,7 @@ def addScore(request):
     now = datetime.datetime.now()
     nowTime = now.time()
     #nowTime = datetime.time(12,12,12)  # Used only for the purpose of testing outside of allowed times (6am to 7pm)
-    if nowTime.hour < 6 or nowTime.hour > 18: # Ensures that the user cannot register outside of accepted times
+    if nowTime.hour < 9 or nowTime.hour > 16: # Ensures that the user cannot register outside of accepted times
         return render(request, 'error.html', {'error': 'time'}) # Informs the user of their error
 
     # Checks if there is a spot for today and if not returns the user to the home page (where one will be assigned)

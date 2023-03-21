@@ -25,8 +25,8 @@ def valid_time(time):
     @author Rowan N
     """
     current_hour = time.hour
-    earliest_hour = 6  # This value indicates the earliest hour the user can submit a valid time
-    latest_hour = 18  # This value indicates the final hour within which a user can submit a valid time
+    earliest_hour = 9  # This value indicates the earliest hour the user can submit a valid time
+    latest_hour = 16  # This value indicates the final hour within which a user can submit a valid time
     if current_hour < earliest_hour:
         raise ValidationError(
             _('%(time)s is not after %(hour)s:00:00'),
