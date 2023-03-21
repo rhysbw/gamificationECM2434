@@ -160,8 +160,9 @@ def home_page(request):
     if not user_agent.is_mobile:
         return render(request, 'QRCodePage.html')
 
-    if not UserInfo.objects.get(user__pk=request.user.pk).hasTakenPledge:
-        return redirect('/pledge')
+    if not request.user.is_superuser:
+        if not UserInfo.objects.get(user__pk=request.user.pk).hasTakenPledge:
+            return redirect('/pledge')
     # Find the date of today
     today = datetime.date.today()
 
@@ -245,8 +246,9 @@ def leaderboard(request):
     if not user_agent.is_mobile:
         return render(request, 'QRCodePage.html')
 
-    if not UserInfo.objects.get(user__pk=request.user.pk).hasTakenPledge:
-        return redirect('/pledge')
+    if not request.user.is_superuser:
+        if not UserInfo.objects.get(user__pk=request.user.pk).hasTakenPledge:
+            return redirect('/pledge')
 
     # This block determines which sort of leaderboard is desired (streak or overall points)
     # The 'other' variable ensures that records are ordered by the not-selected score after initial ordering
@@ -365,6 +367,8 @@ def leaderboard(request):
         'leaderboardType': lb_type,
         'UserResults': new_leaderboard_data
     }
+
+    print(new_leaderboard_data)
     return render(request, 'leaderboard.html', pageContent)
 
 
@@ -394,8 +398,11 @@ def profile_page(request):
     if not user_agent.is_mobile:
         return render(request, 'QRCodePage.html')
 
-    if not UserInfo.objects.get(user__pk=request.user.pk).hasTakenPledge:
-        return redirect('/pledge')
+    try:
+        if not UserInfo.objects.get(user__pk=request.user.pk).hasTakenPledge:
+            return redirect('/pledge')
+    except:
+        return render(request, 'adminInfo.html')
 
     # Takes the users information from the user and UserInfo table to be assigned to the page_contents variables.
     user = request.user.pk
@@ -480,8 +487,9 @@ def compass(request):
     # Checks if the user is logged in or not, if not they are automatically redirected
     # to the login page
 
-    if not UserInfo.objects.get(user__pk=request.user.pk).hasTakenPledge:
-        return redirect('/pledge')
+    if not request.user.is_superuser:
+        if not UserInfo.objects.get(user__pk=request.user.pk).hasTakenPledge:
+            return redirect('/pledge')
 
     # Find the date of today
     today = datetime.date.today()
@@ -757,6 +765,16 @@ def forgot_password(request):
         form = PasswordResetForm()
     return render(request, 'registration/forgot_password.html', {'form': form})
 
+def create_user_info(request):
+    user = request.user.pk
+    user_account = User.objects.get(user)
+    # Fills the userInfo record with data
+    userinfo = UserInfo.objects.create(
+        user=user_account,  # Links new user to new data in UserInfo
+        title='Sapling',  # Placeholder default title
+    )
+    # Saves the record into the table
+    userinfo.save()
 
 titles_dictionary = {
   "titles": [
@@ -776,39 +794,39 @@ titles_dictionary = {
     "The Sustainable Savant",
     "Compost King",
     "Compost Queen",
-    "The Waste Wizard",
-    "The Carbon Crusader",
-    "The Reusable Renegade",
-    "The Upcycling Unicorn",
-    "The Renewable Rocket",
-    "The Energy Elf",
-    "The Conservation Cowboy",
-    "The Thrift-Shop Titan",
-    "The Zero-Waste Zealot",
-    "The Pollution Punisher",
-    "The Eco-Enthusiast",
-    "The Green Guru",
-    "The Sustainability Superstar",
-    "The Planet Protector",
-    "The Eco Explorer",
-    "The Green Guardian",
-    "The Climate Crusader",
-    "The Carbon Footprint Fighter",
-    "The Sustainable Samurai",
-    "The Earth Advocate",
-    "The Renewable Energy Rockstar",
-    "The Eco-Friendly Enforcer",
-    "The Waste-Free Wonder",
-    "The Green Queen",
-    "The Green King",
-    "The Composting Connoisseur",
-    "The Trash-Talking Titan",
-    "The Green-Thumb Genius",
-    "The Ocean Crusader",
-    "The Energy Efficiency Expert",
-    "The Low-Impact Legend",
-    "The Greenery Gnome",
-    "The Green Mamba",
+    "Waste Wizard",
+    "Carbon Crusader",
+    "Reusable Renegade",
+    "Upcycling Unicorn",
+    "Renewable Rocket",
+    "Energy Elf",
+    "Conservation Cowboy",
+    "Thrift-Shop Titan",
+    "Zero-Waste Zealot",
+    "Pollution Punisher",
+    "Eco-Enthusiast",
+    "Green Guru",
+    "Sustainability Superstar",
+    "Planet Protector",
+    "Eco Explorer",
+    "Green Guardian",
+    "Climate Crusader",
+    "Carbon Footprint Fighter",
+    "Sustainable Samurai",
+    "Earth Advocate",
+    "Renewable Energy Rockstar",
+    "Eco-Friendly Enforcer",
+    "Waste-Free Wonder",
+    "Green Queen",
+    "Green King",
+    "Composting Connoisseur",
+    "Trash-Talking Titan",
+    "Green-Thumb Genius",
+    "Ocean Crusader",
+    "Energy Efficiency Expert",
+    "Low-Impact Legend",
+    "Greenery Gnome",
+    "Green Mamba",
     "Matt Collinson",
     "The Wakinator",
     "Liam",
