@@ -12,7 +12,7 @@ from .models import Spot, UserInfo, SpotRecord, Avatar, UserRegister
 import random
 from user_agents import parse
 import datetime
-import json
+from .extra import extra_dictionary
 
 # Create your views here.
 def signup(request):
@@ -201,9 +201,8 @@ def home_page(request):
     description = spot.desc
     latitude = spot.latitude
     longitude = spot.longitude
-
-    average_stars, background_colours  = graph()
-
+    average_stars, background_colours = graph()
+    fact = random.choice(extra_dictionary['facts'])
 
     page_contents = {'file_path': image,
                      'spot_name': spot_name,
@@ -211,7 +210,8 @@ def home_page(request):
                      'spot_latitude': latitude,
                      'spot_longitude': longitude,
                      "spot_data": average_stars,
-                     "colours": background_colours
+                     "colours": background_colours,
+                     "fact": fact
                      }
 
     return render(request, 'home.html', page_contents)
@@ -404,7 +404,7 @@ def profile_page(request):
     page_contents = {
         "streak": streak,
         "title": title,
-        "titles": titles_dictionary['titles'],
+        "titles": extra_dictionary['titles'],
         "profileImage": profile_image,
         "avatars": all_avatars,
         "streak_image": streak_image
@@ -735,21 +735,13 @@ def get_streak_image(user_pk, imageType) -> str: # FUNCTION
 
 
 def privacy_policy(request):
+    """
+    :param request:
+    :return:
+    @author Sam Tebbet
+    """
     return render(request, 'privacy_policy.html')
 
-
-def forgot_password(request):
-    """
-    @author Owen G
-    """
-    if request.method == 'POST':
-        form = PasswordResetForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return render(request, 'password_reset_done.html')
-    else:
-        form = PasswordResetForm()
-    return render(request, 'registration/forgot_password.html', {'form': form})
 
 def create_user_info(request):
     user = request.user.pk
@@ -762,60 +754,3 @@ def create_user_info(request):
     # Saves the record into the table
     userinfo.save()
 
-titles_dictionary = {
-  "titles": [
-    "Captain Compost",
-    "Eco Warrior Princess",
-    "Sir Reduce-A-Lot",
-    "Sapling",
-    "Tree",
-    "Log",
-    "Big Tree",
-    "Large Trunk",
-    "Leaf",
-    "Lady Litter-Free",
-    "The Green Machine",
-    "The Recycling Queen",
-    "The Recycling King",
-    "The Sustainable Savant",
-    "Compost King",
-    "Compost Queen",
-    "Waste Wizard",
-    "Carbon Crusader",
-    "Reusable Renegade",
-    "Upcycling Unicorn",
-    "Renewable Rocket",
-    "Energy Elf",
-    "Conservation Cowboy",
-    "Thrift-Shop Titan",
-    "Zero-Waste Zealot",
-    "Pollution Punisher",
-    "Eco-Enthusiast",
-    "Green Guru",
-    "Sustainability Superstar",
-    "Planet Protector",
-    "Eco Explorer",
-    "Green Guardian",
-    "Climate Crusader",
-    "Carbon Footprint Fighter",
-    "Sustainable Samurai",
-    "Earth Advocate",
-    "Renewable Energy Rockstar",
-    "Eco-Friendly Enforcer",
-    "Waste-Free Wonder",
-    "Green Queen",
-    "Green King",
-    "Composting Connoisseur",
-    "Trash-Talking Titan",
-    "Green-Thumb Genius",
-    "Ocean Crusader",
-    "Energy Efficiency Expert",
-    "Low-Impact Legend",
-    "Greenery Gnome",
-    "Green Mamba",
-    "Matt Collinson",
-    "The Wakinator",
-    "Liam",
-    "Nick The Distiller"
-  ]
-}

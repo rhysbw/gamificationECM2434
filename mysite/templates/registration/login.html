@@ -13,7 +13,7 @@
     <button class="btn btn-primary" type="submit">Login</button>
   </form>
   <p class="text-center">Don't have an account? <a href="/signup">Create an account</a>.</p>
-  <p class="text-center">Forgot your password? <a href="/forgot-password">Reset here</a> </p>
+  <p class="text-center">Forgot your password? <a href="{% url 'password_reset' %}">Reset here</a> </p>
 </div>
 
 {% endblock %}

@@ -84,6 +84,10 @@
             align-items: center;
         }
 
+        .fact_container{
+            align-content: center;
+            text-align: center;
+        }
 
     .text_container {
         position: absolute;
@@ -100,7 +104,7 @@
         position: absolute;
         bottom: 0;
         left: 0;
-        height: 30%;
+        height: 27%;
         width: 100%;
 
         display: flex;
@@ -146,7 +150,7 @@
         label.star {
             float: right;
             padding: 10px;
-            font-size: 36px;
+            font-size: 33px;
             color: #444;
             transition: all .2s;
         }
@@ -390,6 +394,10 @@
                         <label class="star star-4" for="star-4"></label>
                         <input class="star star-5" id="star-5" type="radio" name="star" value="1"/>
                         <label class="star star-5" for="star-5"></label>
+                    </div>
+                    <div class="fact_container">
+                        <h3>Did you know:</h3>
+                        <p>{{ fact }}</p>
                     </div>
                 </div>
             </div>
