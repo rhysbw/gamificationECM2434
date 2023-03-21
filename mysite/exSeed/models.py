@@ -75,7 +75,7 @@ class UserInfo(models.Model):
         'Avatar',
         on_delete=models.CASCADE,
         help_text="User's chosen avatar",
-        default=1,
+        default=5,
     )
     title = models.CharField(
         help_text="The title chosen by the user to represent them",
