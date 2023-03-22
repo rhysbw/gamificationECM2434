@@ -49,6 +49,7 @@ def signup(request):
                 userinfo = UserInfo.objects.create(
                     user=user_account,  # Links new user to new data in UserInfo
                     title='Sapling',  # Placeholder default title
+                    avatarId=Avatar.objects.get(avatarTitle='Emotionless Default')
                 )
                 # Saves the record into the table
                 userinfo.save()
@@ -172,7 +173,6 @@ def home_page(request):
     except:
         # This clause is entered when there is no spot set to today
         yesterday = today - datetime.timedelta(days=1)
-        print(yesterday)
         # Continuously checks for a new spot until it finds one that is not the same as yesterdays
         while True:
             # pick a random spot
@@ -354,7 +354,6 @@ def leaderboard(request):
         'above_name': above_name
     }
 
-    print(new_leaderboard_data)
     return render(request, 'leaderboard.html', pageContent)
 
 

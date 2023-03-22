@@ -32,7 +32,7 @@
                     </svg></span><span class="fw-light" style="font-family: Alatsi, sans-serif;color: var(--bs-light);padding-right: 10px;">Spot of The Day</span></a><button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-2"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
             <div class="collapse navbar-collapse" id="navcol-2">
                 <ul class="navbar-nav ms-auto">
-                    {% if user.is_superuser %}
+                    {% if user.is_staff %}
                         <li class="nav-item"><a class="nav-link" href="/admin">Admin</a></li>
                     {% endif %}
                     {% if user.is_authenticated %}
