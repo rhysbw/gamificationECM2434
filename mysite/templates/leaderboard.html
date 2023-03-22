@@ -12,24 +12,7 @@
             height: 100vh;
             margin-top: 20px;
         }
-        table {
-            border-collapse: collapse;
-            width: 90%;
-            background-color: white;
-            border: 6px solid #285430;
-        }
-        th {
-            text-align: center;
-            padding: 8px;
-        }
-        td {
-            border: 1px solid black;
-            padding: 8px;
-            max-width: 150px;
-            text-overflow:clip;
-            overflow:hidden;
-            text-align: center;
-        }
+
         .currentUser {
             background-color: #b4b4b4;
             font-style: italic;
@@ -51,17 +34,23 @@
             font-size: 18px
         }
 
+        #other {
+            border: 2pt solid black;
+            background-color: white;
+        }
+
         .leaderboard-container {
             border: 3px solid black;
             padding: 5px;
-            background-color: white;
+            background-color: darkgreen;
         }
 
         .user-score {
             width: 100%;
             height: 100px;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             display: flex;
+            border-radius: 10px;
         }
 
 
@@ -80,9 +69,11 @@
 
         .profile-images {
            position: relative;
-           height: auto;
+           height: 95%;
             width: auto;
             border-radius: 50%;
+
+            margin-top: 1%;
         }
 
         #streak-image {
@@ -156,7 +147,7 @@ position - the current user's position on the table-->
 {% block content %}
     <div class = "page_container">
     {{ test }}
-        <h2> Leaderboard Type </h2>
+        <h2> Leaderboard Type: {{ leaderboardType }} </h2>
         <div>
             <button class="btn btn-success" id="total" name="ranking_type" onclick="window.location.href='/leaderboard?q=total'" >Total</button>
             <button class="btn btn-success" id="total" name="ranking_type" onclick="window.location.href='/leaderboard?q=streak'">Streak</button>
@@ -168,7 +159,7 @@ position - the current user's position on the table-->
                 {% if record.3 == above_name%}
                 <hr>
                 {% endif %}
-                    <div class="user-score" {% if record.0 == 1 %} id="first" {% endif %} {% if record.0 == 2 %} id="second" {% endif %} {% if record.0 == 3 %} id="third" {% endif %}>
+                    <div class="user-score" {% if record.0 == 1 %} id="first" {% elif record.0 == 2 %} id="second" {% elif record.0 == 3 %} id="third" {% else %} id = "other"{% endif %}>
                     <div class="position-container">
                         {{ record.0 }}
                     </div>
