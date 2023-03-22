@@ -395,6 +395,7 @@ def profile_page(request):
     user_info = UserInfo.objects.filter(user_id=user).values()
     streak = user_info[0]['currentStreak']
     title = user_info[0]['title']
+    totalScore = user_info[0]['totalPoints']
     profile_id = user_info[0]['avatarId_id']
     profile_image = Avatar.objects.get(id=profile_id).imageName
     all_avatars_ref = Avatar.objects.values_list('imageName')
@@ -403,6 +404,7 @@ def profile_page(request):
     streak_image = get_streak_image(user, 'profile')
     page_contents = {
         "streak": streak,
+        "total" : totalScore,
         "title": title,
         "titles": extra_dictionary['titles'],
         "profileImage": profile_image,
@@ -708,28 +710,30 @@ def get_streak_image(user_pk, imageType) -> str: # FUNCTION
     @author Rowan N
     """
     user = UserInfo.objects.get(user__pk=user_pk)
-    if imageType == "profile":
-        pictures = [
-            "https://i.imgur.com/ASOswDa.png",  # stage one
-            "https://i.imgur.com/KpWonCy.png",  # stage two
-            "https://i.imgur.com/uakyl0I.png",  # stage three
-            "https://i.imgur.com/D1xeyhK.png",  # stage four
-            "https://i.imgur.com/BrsRkPM.png"   # stage five and above
-        ]
-    elif imageType == "leaderboard":
-        pictures = [
-            "https://i.imgur.com/ASOswDa.png",  # stage one
-            "https://i.imgur.com/KpWonCy.png",  # stage two
-            "https://i.imgur.com/uakyl0I.png",  # stage three
-            "https://i.imgur.com/D1xeyhK.png",  # stage four
-            "https://i.imgur.com/BrsRkPM.png"   # stage five and above
-        ]
+
+
+    pictures = [
+        "https://i.imgur.com/V0r8Ftw.png",  # stage one
+        "https://i.imgur.com/9VZtO9X.png",  # stage two
+        "https://i.imgur.com/3zJQoI3.png",  # stage three
+        "https://i.imgur.com/pweVVh2.png",  # stage four
+        "https://i.imgur.com/6jzElXg.png",  # stage five
+        "https://i.imgur.com/nHUmeOw.png",  # stage six
+        "https://i.imgur.com/Yg5CGvc.png",  # stage seven
+        "https://i.imgur.com/BCPvB1V.png",  # stage eight
+        "https://i.imgur.com/8FxfFdV.png",  # stage nine
+        "https://i.imgur.com/WS9jEuH.png",  # stage ten
+        "https://i.imgur.com/IgO05pc.png",  # stage eleven
+        "https://i.imgur.com/d1Jz3G8.png"  # stage twelve +
+    ]
     streak = user.currentStreak
     # Ensures streak cannot go above 5 or below 1 (to fit image constraints)
-    if streak > 4:
-        streak = 5
+    if streak > 11:
+        streak = 12
+        print("here")
     elif streak == 0:
         streak = 1
+
 
     return pictures[streak - 1]
 

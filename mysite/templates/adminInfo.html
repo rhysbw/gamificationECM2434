@@ -1,0 +1,28 @@
+
+
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Home{% endblock %}
+
+<!-- author Benjamin -->
+{% block style %}
+<style>
+  .page_container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+</style>
+{% endblock style %}
+
+
+{% block content %}
+  <div class="page_container">
+      <h1> You appear to be an admin user without a UserInfo record! </h1>
+      <p> please manually make one by going to the <a href = "/admin">admin</a> before using this page</p>
+  </div>
+{% endblock %}
+
