@@ -46,17 +46,29 @@ def signup(request):
             try:
                 user_account = User.objects.get(username=account_username)
                 # Fills the userInfo record with data
-                userinfo = UserInfo.objects.create(
-                    user=user_account,  # Links new user to new data in UserInfo
-                    title='Sapling',  # Placeholder default title
-                    avatarId=Avatar.objects.get(avatarTitle='Emotionless Default')
-                )
-                # Saves the record into the table
-                userinfo.save()
+                try:
+                    userinfo = UserInfo.objects.create(
+                        user=user_account,  # Links new user to new data in UserInfo
+                        title='Sapling',  # Placeholder default title
+                        avatarId=Avatar.objects.get(avatarTitle='Emotionless Default')
+                    )
+                    # Saves the record into the table
+                    userinfo.save()
+                except:
+                    Avatar.objects.create(
+                        imageName='https://i.imgur.com/fhrZmo9.png',
+                        avatarTitle='Emotionless Default'
+                    )
+                    UserInfo.objects.create(
+                        user=user_account,  # Links new user to new data in UserInfo
+                        title='Sapling',  # Placeholder default title
+                        avatarId=Avatar.objects.get(avatarTitle='Emotionless Default')
+                    )
+
+                    pass
             except:
                 # Here a fail would only a occur if there was that user was already in UserInfo
                 pass
-
             user = authenticate(username=account_username, password=raw_password)
             login(request, user)
             return redirect('pledge')

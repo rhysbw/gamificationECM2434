@@ -1,4 +1,5 @@
-from django.test import TransactionTestCase
+from django.contrib.auth.models import User
+from django.test import TransactionTestCase, Client
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from .models import UserInfo, Avatar, SpotRecord, Spot
