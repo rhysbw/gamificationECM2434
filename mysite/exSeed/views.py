@@ -575,6 +575,8 @@ def addScore(request):
 
     today = datetime.date.today()
     first_register = UserInfo.objects.filter(lastSpotRegister=today)
+
+    # If the user is the first person to add a score
     if len(first_register) == 0:
         yesterday = today - datetime.timedelta(days=1)
         # Gets ALL UserInfo records that have not played either yesterday or today
@@ -601,6 +603,7 @@ def addScore(request):
     now = datetime.datetime.now()
     nowTime = now.time()
     #nowTime = datetime.time(12,12,12)  # Used only for the purpose of testing outside of allowed times (6am to 7pm)
+
     if nowTime.hour < 9 or nowTime.hour > 16: # Ensures that the user cannot register outside of accepted times
         return render(request, 'error.html', {'error': 'time'}) # Informs the user of their error
 
@@ -621,9 +624,11 @@ def addScore(request):
         if additional_points < 0:
             additional_points = 0 # This ensures that later users do not get negative points
         info = UserInfo.objects.get(user_id=request.user.pk)
+
         info.totalPoints = info.totalPoints + 1 + additional_points
         info.currentStreak = info.currentStreak + 1
         info.lastSpotRegister = today
+
         spot.attendance = spot.attendance + 1
         UserRegister(uId=request.user, srId=spot, spotNiceness=user_spot_rating, registerTimeEditable=nowTime).save() # Registers user at spot
         spot.save() # Saves spot with incremented attendance
@@ -635,6 +640,10 @@ def addScore(request):
 
 @login_required()
 def change_title(request, title):
+    """
+    Changes the users title based on their input
+    param: request
+    """
     user_agent = parse(request.META['HTTP_USER_AGENT'])
     if not user_agent.is_mobile:
         return render(request, 'QRCodePage.html')
