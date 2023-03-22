@@ -71,20 +71,28 @@ number_of_avatars: The length of the avatars list
             position: absolute;
             top: 40%;
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translate(-50%, -40%);
             display: flex;
         }
         .streak-display{
             position: absolute;
             top:10%;
-            right: 50%;
+            right: 40%;
             text-align: left;
+            font-weight: bold;
         }
         .streak-image{
             margin-top: 50%;
         }
 
-        img {
+        .streak-info img {
+            border: 5px solid black;
+            width: 350px;
+            height: 95%;
+
+        }
+
+        .image-container img {
             border-radius: 50%;
             width: 95%;
             height: 95%;
@@ -110,6 +118,12 @@ number_of_avatars: The length of the avatars list
             width: 96.5%;
             height: 100%;
             top: 25%;
+        }
+
+        .modal-dialog img {
+            border-radius: 50%;
+            width: 95%;
+            height: 95%;
         }
 
         /* HIDE RADIO */
@@ -169,7 +183,7 @@ number_of_avatars: The length of the avatars list
         </div>
 
         <div class="streak-info">
-            <p class="streak-display"> Current Streak: {{ streak }}</p>
+            <p class="streak-display"> <br> Current Streak: {{ streak }} <br> Total Score: {{ total }} <br> Your Spot:</p>
             </br>
             <img src="{{ streak_image }}" class="streak-image">
         </div>
@@ -207,6 +221,5 @@ number_of_avatars: The length of the avatars list
         </div>
     </div>
 {% endblock content %}
-
 
 
