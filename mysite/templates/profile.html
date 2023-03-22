@@ -171,10 +171,10 @@ number_of_avatars: The length of the avatars list
             <br>
             <div class="dropdown">
                 <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1"
-                        data-bs-toggle="dropdown" aria-expanded="false">
+                        data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
                     Change Title
                 </button>
-                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropdownMenuButton1">
                     {% for other_title in titles %}
                         <li><a class="dropdown-item" href="/change_title/{{ other_title }}">{{ other_title }}</a></li>
                     {% endfor %}
