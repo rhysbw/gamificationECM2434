@@ -40,9 +40,7 @@
         }
 
         .leaderboard-container {
-            border: 3px solid black;
             padding: 5px;
-            background-color: #e0ddd6;
         }
 
         .user-score {
@@ -147,7 +145,11 @@ position - the current user's position on the table-->
 {% block content %}
     <div class = "page_container">
     {{ test }}
-        <h2> Leaderboard Type: {{ leaderboardType }} </h2>
+    {% if leaderboardType == "streak" %}
+        <h2><b> User Streaks </b></h2>
+    {% elif leaderboardType == "total" %}
+    <h2><b> Total Points</b></h2>
+    {% endif %}
         <div>
             <button class="btn btn-success" id="total" name="ranking_type" onclick="window.location.href='/leaderboard?q=total'" >Total</button>
             <button class="btn btn-success" id="total" name="ranking_type" onclick="window.location.href='/leaderboard?q=streak'">Streak</button>

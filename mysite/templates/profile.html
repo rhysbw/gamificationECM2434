@@ -170,25 +170,18 @@ number_of_avatars: The length of the avatars list
             <p class="userName"> {{ user.username }} </p>
             <p class="title">{{ title }}</p>
             <br>
-            <div class="dropdown">
-                <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1"
-                        data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
-                    Change Title
-                </button>
-                <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropdownMenuButton1">
-                    {% for other_title in titles %}
-                        <li><a class="dropdown-item" href="/change_title/{{ other_title }}">{{ other_title }}</a></li>
-                    {% endfor %}
-                </ul>
-            </div>
+
         </div>
 
         <div class="streak-info">
-            <p class="streak-display"> <br> Current Streak: {{ streak }} <br> Total Score: {{ total }} <br> Your Spot:</p>
-            </br>
+            <p class="streak-display"> <br> Current Streak: {{ streak }} <br> Total Score: {{ total }} </p>
             <img src="{{ streak_image }}" class="streak-image">
         </div>
 
+
+        <div>
+
+        </div>
 
     </div>
 
@@ -199,7 +192,7 @@ number_of_avatars: The length of the avatars list
     <div class="modal fade" id="editProfileModal" tabindex="1" role="dialog" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
-                <form action="/change_profile_picture" method="post">
+                <form action="/change_profile_picture" method="post" required>
                     {% csrf_token %}
                     <div class="modal-body">
                         <div class="image-grid-container">
@@ -213,8 +206,18 @@ number_of_avatars: The length of the avatars list
                     </div>
                     <div class="modal-footer">
                         <div class="container">
-                            <button type="button" class="btn btn-warning" data-bs-dismiss="modal">Close</button>
-                            <button type="submit" class="btn btn-success">Save changes</button>
+
+                            <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1"
+                                    data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
+                                Change Title
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropdownMenuButton1">
+                                {% for other_title in titles %}
+                                    <li><a class="dropdown-item" href="/change_title/{{ other_title }}">{{ other_title }}</a></li>
+                                {% endfor %}
+                            </ul>
+
+                            <button type="submit" class="btn btn-success">Save Image</button>
                         </div>
                     </div>
                 </form>

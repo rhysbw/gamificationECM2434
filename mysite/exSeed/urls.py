@@ -28,6 +28,8 @@ urlpatterns = [
     path("pledge", views.pledge, name="pledge"),
     path("take_pledge", views.take_pledge, name="takePledge"),
     path("privacy_policy", views.privacy_policy, name="privacy_policy"),
+    path("about",  TemplateView.as_view(template_name='about.html'), name ="about page"),
+
 
     path('password-reset/', PasswordResetView.as_view(template_name='registration/password_reset_form.html'), name='password_reset'),
     path('password-reset/done/', PasswordResetDoneView.as_view(template_name='registration/password_reset_done.html'), name='password_reset_done'),

@@ -46,17 +46,29 @@ def signup(request):
             try:
                 user_account = User.objects.get(username=account_username)
                 # Fills the userInfo record with data
-                userinfo = UserInfo.objects.create(
-                    user=user_account,  # Links new user to new data in UserInfo
-                    title='Sapling',  # Placeholder default title
-                    avatarId=Avatar.objects.get(avatarTitle='Emotionless Default')
-                )
-                # Saves the record into the table
-                userinfo.save()
+                try:
+                    userinfo = UserInfo.objects.create(
+                        user=user_account,  # Links new user to new data in UserInfo
+                        title='Sapling',  # Placeholder default title
+                        avatarId=Avatar.objects.get(avatarTitle='Emotionless Default')
+                    )
+                    # Saves the record into the table
+                    userinfo.save()
+                except:
+                    Avatar.objects.create(
+                        imageName='https://i.imgur.com/fhrZmo9.png',
+                        avatarTitle='Emotionless Default'
+                    )
+                    UserInfo.objects.create(
+                        user=user_account,  # Links new user to new data in UserInfo
+                        title='Sapling',  # Placeholder default title
+                        avatarId=Avatar.objects.get(avatarTitle='Emotionless Default')
+                    )
+
+                    pass
             except:
                 # Here a fail would only a occur if there was that user was already in UserInfo
                 pass
-
             user = authenticate(username=account_username, password=raw_password)
             login(request, user)
             return redirect('pledge')
@@ -521,10 +533,13 @@ def change_profile_picture(request):
     user = request.user.pk
 
     # Edits the user_info table to add the id of the new profile picture
-    to_edit = UserInfo.objects.get(user_id=user)
-    new_avatar = Avatar.objects.get(imageName=chosen_pfp)
-    to_edit.avatarId_id = new_avatar.id
-    to_edit.save()
+    try:
+        to_edit = UserInfo.objects.get(user_id=user)
+        new_avatar = Avatar.objects.get(imageName=chosen_pfp)
+        to_edit.avatarId_id = new_avatar.id
+        to_edit.save()
+    except:
+        pass
 
     return redirect('/profile')
 
@@ -563,6 +578,8 @@ def addScore(request):
 
     today = datetime.date.today()
     first_register = UserInfo.objects.filter(lastSpotRegister=today)
+
+    # If the user is the first person to add a score
     if len(first_register) == 0:
         yesterday = today - datetime.timedelta(days=1)
         # Gets ALL UserInfo records that have not played either yesterday or today
@@ -589,6 +606,7 @@ def addScore(request):
     now = datetime.datetime.now()
     nowTime = now.time()
     #nowTime = datetime.time(12,12,12)  # Used only for the purpose of testing outside of allowed times (6am to 7pm)
+
     if nowTime.hour < 9 or nowTime.hour > 16: # Ensures that the user cannot register outside of accepted times
         return render(request, 'error.html', {'error': 'time'}) # Informs the user of their error
 
@@ -609,9 +627,11 @@ def addScore(request):
         if additional_points < 0:
             additional_points = 0 # This ensures that later users do not get negative points
         info = UserInfo.objects.get(user_id=request.user.pk)
+
         info.totalPoints = info.totalPoints + 1 + additional_points
         info.currentStreak = info.currentStreak + 1
         info.lastSpotRegister = today
+
         spot.attendance = spot.attendance + 1
         UserRegister(uId=request.user, srId=spot, spotNiceness=user_spot_rating, registerTimeEditable=nowTime).save() # Registers user at spot
         spot.save() # Saves spot with incremented attendance
@@ -623,6 +643,10 @@ def addScore(request):
 
 @login_required()
 def change_title(request, title):
+    """
+    Changes the users title based on their input
+    param: request
+    """
     user_agent = parse(request.META['HTTP_USER_AGENT'])
     if not user_agent.is_mobile:
         return render(request, 'QRCodePage.html')
