@@ -753,7 +753,6 @@ def get_streak_image(user_pk, imageType) -> str: # FUNCTION
     # Ensures streak cannot go above 5 or below 1 (to fit image constraints)
     if streak > 11:
         streak = 12
-        print("here")
     elif streak == 0:
         streak = 1
 
@@ -770,14 +769,4 @@ def privacy_policy(request):
     return render(request, 'privacy_policy.html')
 
 
-def create_user_info(request):
-    user = request.user.pk
-    user_account = User.objects.get(user)
-    # Fills the userInfo record with data
-    userinfo = UserInfo.objects.create(
-        user=user_account,  # Links new user to new data in UserInfo
-        title='Sapling',  # Placeholder default title
-    )
-    # Saves the record into the table
-    userinfo.save()
 
