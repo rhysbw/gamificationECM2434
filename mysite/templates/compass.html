@@ -33,7 +33,7 @@
                             alert("has to be allowed!");
                         }
                     })
-                    .catch(() => alert("not supported"));  // TODO
+                    .catch(() => alert("not supported"));
             }
         }
 
@@ -97,13 +97,13 @@
             pointDegree = calcDegreeToPoint(latitude, longitude);
             dist = distance(latitude, longitude, {{ spot_lat }}, {{ spot_long }});
 
-            //TODO: FIX THIS @rhys/@ben
+            // checks how far from spot
             if (dist > 50) {
                 document.getElementById("testing").innerHTML = dist + 'm away'; // shows distance to spot
             } else {
-                document.getElementById("testing").innerHTML = "You've arrived"; // shows distance to spot
+                document.getElementById("testing").innerHTML = "You've arrived";
             }
-
+            // if spin fully
             if (pointDegree < 0) {
                 pointDegree = pointDegree + 360;
             }
@@ -185,7 +185,7 @@
 
 {% block content %}
     <div class="page_container">
-        <!-- this is the current compass starting, need to add a text overlay or a button, TODO: add button call init() @BEN -->
+        <!-- this is the current compass starting, need to add a text overlay or a button-->
         <div class="compass" id="compass" onclick="init()">
             <img src="https://i.imgur.com/jpxEmwB.png" id="line">
             <div class="my-point" id="my-point"></div>
