@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Error occurred{% endblock %}
+
+{% block style %}
+{% endblock %}
+
+{% block script %}
+    <script>
+        {% if error == "already" %}
+    alert("You have already registered at this spot")
+        {% elif error == "time" %}
+    alert("You must register at a spot between 9am and 5pm!")
+        {% endif %}
+    window.location.href = "{% url 'home' %}"
+    </script>
+{% endblock %}

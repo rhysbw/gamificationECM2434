@@ -4,16 +4,31 @@
 <!--- author Benjamin--->
 <head>
     <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-    <title>Spot of The Day</title>
+    <title>Spot of The Day</title> {% load static %}
 
-  {% load static %}
     <link rel="stylesheet" href="{% static 'bootstrap.min.css' %}">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Alatsi&amp;display=swap">
     <link rel="stylesheet" href="{% static 'Navbar-Right-Links-icons.css' %}">
 
     <style>
-    
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+
+    #wrapper {
+      min-height: 100%;
+      position: relative;
+    }
+
+    footer {
+      position: relative;
+      bottom: 0;
+      width: 100%;
+      height: 20px;
+    }
 
     </style>
     {% block style %}{% endblock %}
@@ -32,26 +47,42 @@
                     </svg></span><span class="fw-light" style="font-family: Alatsi, sans-serif;color: var(--bs-light);padding-right: 10px;">Spot of The Day</span></a><button data-bs-toggle="collapse" class="navbar-toggler" data-bs-target="#navcol-2"><span class="visually-hidden">Toggle navigation</span><span class="navbar-toggler-icon"></span></button>
             <div class="collapse navbar-collapse" id="navcol-2">
                 <ul class="navbar-nav ms-auto">
+                        <li class="nav-item"><a class="nav-link" href="/about">About</a></li>
+                    {% if user.is_staff %}
+                        <li class="nav-item"><a class="nav-link" href="/admin">Admin</a></li>
+                    {% endif %}
                     {% if user.is_authenticated %}
-                        <li class="nav-item"><a class="nav-link active" href="/">Home</a></li>
                         <li class="nav-item"><a class="nav-link" href="/leaderboard?q=streak">Leaderboard</a></li>
                         <li class="nav-item"><a class="nav-link" href="/profile">Profile</a></li>
                         <li class="nav-item"><a class="nav-link" href="/logout">Sign Out</a></li>
+
                     {% else %}
                         <li class="nav-item"><a class="nav-link" href="/login">Log In</a></li>
                         <li class="nav-item"><a class="nav-link" href="/signup">Register</a></li>
                     {% endif %}
+
+
+
+
                 </ul>
             </div>
         </div>
     </nav>
-    <script src="{% static 'bootstrap.min.js' %}"></script>
 
-    <!--- creates a block where all other pages can put their content --->
+   
+    <script src="{% static 'jquery.min.js' %}"></script>
+    <script src="{% static 'bootstrap.min.js' %}"></script>
     {% block content %}
 
     {% endblock %}
-    
+
+    {% if request.path != '/login/' and request.path != '/signup' and request.path != '/privacy_policy' and request.path != '/pledge' and request.path != '/leaderboard' %}
+        <footer style="background-color: #198754; color: white; height: 20px; text-align: center; font-size: 15px" >
+            <span>Read our Privacy Policy <a href="/privacy_policy" style = "color: white">here</a></span>
+        </footer>
+    {% endif %}
+
+
 </body>
 
 </html>

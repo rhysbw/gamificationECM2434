@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Graph Test{% endblock %}
+
+{% block style %}
+<style>
+    .flip-card {
+      background-color: transparent;
+      width: 33.75vh;
+      height: 45vh;
+      perspective: 1000px;
+    }
+
+    .flip-card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+      box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+      border-radius: 10px;
+      border: solid 1px green;
+      cursor: pointer;
+    }
+
+    .flip-card-clicked .flip-card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .flip-card-front, .flip-card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+    }
+
+    .flip-card-front {
+      background-color: #bbb;
+      color: black;
+    }
+
+    .flip-card-front img {
+        width: 100%;
+        height: 100%;
+        border-radius: 10px;
+        border: solid 1px green;
+        box-shadow: 0px 0px 10px 5px #285430;
+    }
+
+    .flip-card-back canvas {
+        border-radius: 10px;
+        border: solid 1px green;
+        box-shadow: 0px 0px 10px 5px #285430;
+    }
+
+    .flip-card-back {
+        transform: rotateY(180deg);
+    }
+
+    .flip-card-inner.active {
+      transform: rotateY(180deg);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!--<canvas id="myChart" style="width:100%;max-width:700px"></canvas>-->
+
+    <div class="flip-card">
+      <div class="flip-card-inner" id="flip-card">
+        <div class="flip-card-front">
+            <img src="https://i.imgur.com/giM0n6t.jpg">
+        </div>
+        <div class="flip-card-back">
+          <canvas id="bar" style="width:100%;height:100%;background-color:white;"></canvas>
+        </div>
+      </div>
+    </div>
+    <script>
+
+    const flipCardInner = document.getElementById('flip-card');
+
+    flipCardInner.addEventListener('click', function() {
+      this.classList.toggle('active');
+    });
+
+
+
+    const ctx = document.getElementById('bar')
+    const labels = ['6:00','7:00','8:00','9:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00']
+    const dataValues = [3.5,4.2,3.3,2.5,1.3,1.2,2.1,2.6,3.6,3.9,4.3]
+    const bar_ctx = document.getElementById('bar').getContext('2d')
+    const background_1 = bar_ctx.createLinearGradient(0,0,0,350);
+    background_1.addColorStop(0.15, 'rgb(25,135,84)');
+    //background_1.addColorStop(0.4, 'orange');
+    background_1.addColorStop(0.85, '#EE6055');
+
+    new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'Star rating throughout the day',
+            data: {{ spot_data }},
+            barPercentage: 1.25,
+            backgroundColor:  {{ colours|safe }},
+            borderWidth: 1,
+        }]
+    },
+    options: {
+        plugins: {
+            legend: {
+                display: false,
+            },
+            tooltips: {
+                enabled: false,
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                title: {
+                    text: "Stars",
+                    display: true,
+                },
+                max: 5,
+                grid: {
+                    display: false,
+                }
+            },
+            x: {
+                title: {
+                    text: "Time",
+                    display: true,
+                },
+                grid: {
+                    display: false,
+                }
+            },
+        }
+    }
+    });
+
+
+    </script>
+    <div>
+    </div>
+{% endblock %}

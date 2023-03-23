@@ -17,15 +17,15 @@ class ExseedConfig(AppConfig):
 
         @author: Benjamin
         """
-
+        
         # Imports the models within the function as this function only runs when it is ready
-        from .models import PreviousSpotAttend, Spot
+        from .models import SpotRecord, Spot
 
         # Assigns variables for the date today and yesterday and checks to see if there are any
         # spots that are assigned for today
         today = datetime.date.today()
         yesterday = today - datetime.timedelta(days=1)
-        spots = PreviousSpotAttend.objects.filter(spotDay=today)
+        spots = SpotRecord.objects.filter(spotDay=today)
 
         # Condition checks if there are any spots assigned for today otherwise no code will run
         if len(spots) == 0:
@@ -35,12 +35,9 @@ class ExseedConfig(AppConfig):
                 spot = random.choice(Spot.objects.all())
                 # check if that is the same as yesterday and if so repeat the loop to find a new one
                 try:
-                    if spot.id != PreviousSpotAttend.objects.filter(spotDay=yesterday)[0].sId:
+                    if spot.id != SpotRecord.objects.filter(spotDay=yesterday)[0].sId:
                         break
                 except IndexError:
-                    break
+                       break
             # Saves the spot in the pervious spot attend database
-            PreviousSpotAttend(sId=spot, attendance=0, spotDay=today).save()
-
-
-
+            SpotRecord(sId=spot, attendance=0, spotDay=today).save()

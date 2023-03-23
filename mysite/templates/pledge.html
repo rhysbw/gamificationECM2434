@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Spot of the Day Pledge{% endblock %}
+
+<!-- This page shows how sustainability is the main focus of Spot of the Day, and how we hope our users to behave while playing
+Authors - Rowan N and Sam Tebbet -->
+
+{% block style %}
+    <style>
+    #space {
+        margin: 30px;
+    }
+    </style>
+{% endblock %}
+
+{% block script %}
+    <script>
+        // Function enables the button if the pledge is accepted
+        function isChecked() {
+            var button = document.getElementById("submit_btn");
+            var checkbox = document.getElementById("agree")
+
+            if (checkbox.checked === true) {
+                button.disabled = "";
+            } else {
+                button.disabled = "disabled";
+            }
+        }
+    </script>
+{% endblock script %}
+
+{% block content %}
+    <div class="text-center" id="space">
+    <h1><u>Welcome to Spot of the Day!</u></h1>
+    <p>Thank you for signing up to Spot of the Day! Your final step to activating your account is to take the
+    <i>Spot of the Day pledge</i>. We want everyone to respect our local green spaces and leave them as they found them (or even nicer!).</p>
+    <p>It's vital, if we want future generations to enjoy nature as we do, that we live our lives in a sustainable and eco-friendly way, and take stewardship of the environment around us.</p>
+    <p>By clicking the button below, you agree to be a guardian for the spots you visit during your time playing Spot of the Day, so that everyone playing has the best experience possible.</p>
+    <form action={% url 'takePledge' %} method="POST">
+        {% csrf_token %}
+        <input class="form-check-input" type="checkbox" name="pledge" required="required" id="agree" onchange="isChecked()">
+        <label for="agree">I agree to take care of all spots I visit</label><br><br>
+        <button type="submit" id="submit_btn" class="btn btn-success" disabled="disabled">I take the SotD pledge</button>
+    </form>
+    </div>
+
+{% endblock %}

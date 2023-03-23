@@ -28,12 +28,13 @@ DEBUG = True
 ALLOWED_HOSTS = ["exseed.duckdns.org",
                  "ecm2434.duckdns.org",
                  "spotoftheday.duckdns.org",
-                 '127.0.0.1', 
+                 '127.0.0.1',
+		 '10.0.1.38', 
                  '192.168.0.31',  # Ben IP
                  '10.229.79.209',  # Sam IP
                  'localhost',
-                 '10.0.1.44'
-                 '172.16.15.15'  # Rowan
+                 '10.0.1.12',
+                 '172.16.15.15',  # Rowan
                  '172.16.12.1'  # Rowan (not sure which is correct but added both to be safe)
                  ]
 
@@ -48,6 +49,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_extensions',
     'crispy_forms',
     'crispy_bootstrap5'
 ]
@@ -134,13 +136,26 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'mysite/static/')
+    os.path.join(BASE_DIR, 'mysite/static')
 ]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-LOGIN_URL = '/login/'
+LOGIN_URL = '/login'
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "home"
+
+"""
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+EMAIL_FILE_PATH = BASE_DIR / "sent_emails"
+"""
+
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'noreply.exseed@gmail.com'
+EMAIL_HOST_PASSWORD = 'wvqbetysbnocwtsm'
+DEFAULT_FROM_EMAIL = 'noreply.exseed@gmail.com'
+
